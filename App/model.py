@@ -25,6 +25,7 @@
  """
 
 
+import datetime as datetime
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import stack as st
@@ -68,21 +69,24 @@ def new_data_structs(tipo):
     catalog['skills'] = mp.newMap(10000,
                                    maptype='CHAINING',
                                    loadfactor=4,
-                                   cmpfunction='')
+                                   cmpfunction=compareMapBookIds)
 
     catalog['multi-locations'] = mp.newMap(10000,
                                    maptype='CHAINING',
                                    loadfactor=4,
+                                   cmpfunction=compareMapBookIds
                                    )
 
     catalog['jobs'] = mp.newMap(10000,
                                    maptype='CHAINING',
                                    loadfactor=4,
+                                   cmpfunction=compareMapBookIds
                                    )
 
     catalog['employment-types'] = mp.newMap(10000,
                                    maptype='CHAINING',
                                    loadfactor=4,
+                                   cmpfunction=compareMapBookIds
                                    )
 
     #TODO: Inicializar las estructuras de datos
@@ -104,7 +108,7 @@ def add_skills(catalog, skills):
 def add_jobs(catalog, job):
     
     date = job['published_at']
-    job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
+    job['published_at'] = datetime.datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
     mp.put(catalog['jobs'],job['id'],job)
     
 def add_locations(catalog, location):
@@ -148,7 +152,8 @@ def data_size(data_structs):
     Retorna el tamaño de la lista de datos
     """
     #TODO: Crear la función para obtener el tamaño de una lista
-    pass
+    
+    return mp.size(data_structs)
 
 
 def req_1(catalog, n, pais, expert):
@@ -695,3 +700,16 @@ def sort_criteria_req3(data_1,data_2):
 
 def sort_criteria_req6y7(data_1,data_2):
     return data_1['count']>data_2['count']
+
+def compareMapBookIds(id, entry):
+    """
+    Compara dos ids de libros, id es un identificador
+    y entry una pareja llave-valor
+    """
+    identry = me.getKey(entry)
+    if id == identry:
+        return 0
+    elif id > identry:
+        return 1
+    else:
+        return -1

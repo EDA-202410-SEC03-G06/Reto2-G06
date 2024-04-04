@@ -57,9 +57,10 @@ def load_data(control,size_archivo):
         arc = "small"
     elif size_archivo == 4: 
         arc= "80-por"
-    elif size_archivo == 5:
+    else: 
         arc = "large"
         
+    
     skills = load_skills(control['model'], arc)
     jobs = load_jobs(control["model"], arc)
     locations = load_locations(control['model'], arc)
@@ -81,7 +82,7 @@ def load_jobs(catalog,arc):
         model.add_jobs(catalog,job)
         
     
-    model.sort(catalog)
+    #model.sort(catalog)
     return model.data_size(catalog['jobs'])
 
 def load_locations(catalog,arc):

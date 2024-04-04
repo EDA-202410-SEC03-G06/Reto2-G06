@@ -44,8 +44,9 @@ def new_controller():
     """
         Se crea una instancia del controlador
     """
+    return controller.new_controller(tipo)
     #TODO: Llamar la función del controlador donde se crean las estructuras de datos
-    pass
+    
 
 
 def print_menu():
@@ -79,8 +80,8 @@ def print_data(control):
         Función que imprime un dato dado su ID
     """
     #TODO: Realizar la función para imprimir un elemento
-    catalog = controller.get_data(control)
-    print(tabulate(catalog['elements']))
+#    catalog = controller.get_data(control)
+    #print(tabulate(catalog['elements']))
      
 
 def print_req_1(control):
@@ -222,9 +223,7 @@ def print_req_8(control):
 
 # Se crea el controlador asociado a la vista
 tipo = None
-size_archivo = 3
-control = new_controller()
-
+size_archivo = 1
 default_limit = 1000
 
 # main del reto
@@ -234,6 +233,7 @@ if __name__ == "__main__":
     #thread = threading.Thread(target=menu_cycle)
    # thread.start()
     
+    control = new_controller()
 
     """
     Menu principal
