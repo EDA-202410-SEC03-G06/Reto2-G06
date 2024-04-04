@@ -65,10 +65,26 @@ def new_data_structs(tipo):
               }
     
     
-    catalog['skills'] = mp.newMap('CHAINING')
-    catalog['multi-locations'] = mp.newMap('CHAINING')
-    catalog['jobs'] = mp.newMap('CHAINING')
-    catalog['employment-types'] = mp.newMap('CHAINING')
+    catalog['skills'] = mp.newMap(10000,
+                                   maptype='CHAINING',
+                                   loadfactor=4,
+                                   cmpfunction='')
+
+    catalog['multi-locations'] = mp.newMap(10000,
+                                   maptype='CHAINING',
+                                   loadfactor=4,
+                                   )
+
+    catalog['jobs'] = mp.newMap(10000,
+                                   maptype='CHAINING',
+                                   loadfactor=4,
+                                   )
+
+    catalog['employment-types'] = mp.newMap(10000,
+                                   maptype='CHAINING',
+                                   loadfactor=4,
+                                   )
+
     #TODO: Inicializar las estructuras de datos
     return catalog
 
@@ -79,8 +95,7 @@ def add_skills(catalog, skills):
     """
     Función para agregar nuevos elementos a la lista
     """
-    dup = me.newMapEntry(skills['id'],skills)
-    lt.addLast(catalog['skills'],dup)
+    mp.put(catalog['skills'],skills['id'],skills)
 
 # Funciones para agregar informacion al modelo
 
@@ -90,14 +105,16 @@ def add_jobs(catalog, job):
     
     date = job['published_at']
     job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
-    lt.addLast(catalog['jobs'], job)
+    mp.put(catalog['jobs'],job['id'],job)
     
 def add_locations(catalog, location):
-    me.newMapEntry()
+    mp.put(catalog['multi-locations'],location['id'],location)
     
 def add_employment_types(catalog,emptype): 
-    lt.addLast(catalog['employment-types'], emptype)
+    mp.put(catalog['employment-types'],emptype['id'],emptype)
 # Funciones para creacion de datos
+
+
 def add_data(data_structs, data):
     """
     Función para agregar nuevos elementos a la lista
