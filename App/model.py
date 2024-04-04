@@ -46,17 +46,58 @@ dos listas, una para los videos, otra para las categorias de los mismos.
 # Construccion de modelos
 
 
-def new_data_structs():
+def new_data_structs(tipo):
     """
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
-    """
+    title;street;city;country_code;address_text;marker_icon;workplace_type;
+    company_name;company_url;company_size;experience_level;published_at;remote_interview;
+    open_to_hire_ukrainians;id;display_offer
+
+    """ 
+    if tipo == None:
+        tipo = 'CHAINING'
+        
+    catalog = {'skills':None,
+               'multi-locations': None,
+               'jobs': None,
+               'employment-types':None
+              }
+    
+    
+    catalog['skills'] = mp.newMap('CHAINING')
+    catalog['multi-locations'] = mp.newMap('CHAINING')
+    catalog['jobs'] = mp.newMap('CHAINING')
+    catalog['employment-types'] = mp.newMap('CHAINING')
     #TODO: Inicializar las estructuras de datos
-    pass
+    return catalog
 
 
 # Funciones para agregar informacion al modelo
 
+def add_skills(catalog, skills):
+    """
+    Función para agregar nuevos elementos a la lista
+    """
+    dup = me.newMapEntry(skills['id'],skills)
+    lt.addLast(catalog['skills'],dup)
+
+# Funciones para agregar informacion al modelo
+
+    
+    
+def add_jobs(catalog, job):
+    
+    date = job['published_at']
+    job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
+    lt.addLast(catalog['jobs'], job)
+    
+def add_locations(catalog, location):
+    me.newMapEntry()
+    
+def add_employment_types(catalog,emptype): 
+    lt.addLast(catalog['employment-types'], emptype)
+# Funciones para creacion de datos
 def add_data(data_structs, data):
     """
     Función para agregar nuevos elementos a la lista
