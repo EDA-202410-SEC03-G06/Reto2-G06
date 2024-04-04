@@ -69,60 +69,115 @@ def get_data(control, id):
     pass
 
 
-def req_1(control):
+def req_1(control,n,pais,exp):
     """
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    pass
+    start_time = get_time()
+    lista = model.req_1(control['model'],n,pais,exp)
+    end_time = get_time()
+    deltaTime = delta_time(start_time, end_time)
+    print(deltaTime,"[ms]")
+    size = model.data_size(lista)
+    
+    return size, lista
 
 
-def req_2(control):
+def req_2(control, n , empresa, city):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
-    pass
+    start_time = get_time()
+    lista = model.req_2(control['model'],n , empresa, city)
+    end_time = get_time()
+    deltaTime = delta_time(start_time, end_time)
+    print(deltaTime,"[ms]")
+    size = model.data_size(lista)
+
+    return size, lista 
 
 
-def req_3(control):
+def req_3(control,empresa,fecha_in,fecha_fin):
     """
     Retorna el resultado del requerimiento 3
+    Número total de ofertas.
+• Número total de ofertas con experticia junior.
+• Número total de ofertas con experticia mid.
+• Número total de ofertas con experticia senior
     """
     # TODO: Modificar el requerimiento 3
-    pass
+    start_time = get_time()
+    lista = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+    end_time = get_time()
+    deltaTime = delta_time(start_time, end_time)
+    print(deltaTime,"[ms]")
+    size = model.data_size(lista)
+    junior = 0
+    mid = 0
+    senior = 0 
+    for oferta in model.lt.iterator(lista):
+        if oferta['experience_level']=='junior':
+            junior +=1
+        elif oferta['experience_level']=='mid':
+            mid +=1
+        elif oferta['experience_level']=='senior':
+            senior +=1
+        
+    return size, junior, mid, senior
+    
 
 
-def req_4(control):
+def req_4(control, country, f_inicio, f_fin):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
-    pass
+    start_time = get_time()
+    ofertas = model.req_4(control['model'], country, f_inicio, f_fin)
+    end_time = get_time()
+    deltaTime =delta_time(start_time,end_time)
+    print(deltaTime, "[ms]")
+    return ofertas
+   
 
-
-def req_5(control):
+def req_5(catalog, city, fecha_in, fecha_fin):
     """
     Retorna el resultado del requerimiento 5
     """
     # TODO: Modificar el requerimiento 5
-    pass
+    prueba= model.req_5(catalog["model"], city, fecha_in, fecha_fin)
+    
+    return prueba
 
-def req_6(control):
+def req_6(control,n,pais,exp,fecha_in,fecha_fin):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
-    pass
+    start_time = get_time()
+    ofertas = model.req_6(control['model'],n,pais,exp,fecha_in,fecha_fin)
+    end_time = get_time()
+    deltaTime = delta_time(start_time, end_time)
+    print(deltaTime,"[ms]")
+
+    return ofertas
 
 
-def req_7(control):
+
+
+def req_7(control, n, f_inicio, f_fin):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
-    pass
-
+    start_time = get_time()
+    ofertas = model.req_7(control['model'], n, f_inicio, f_fin)
+    end_time = get_time()
+    deltaTime =delta_time(start_time,end_time)
+    print(deltaTime, "[ms]")
+    return ofertas
 
 def req_8(control):
     """
@@ -130,7 +185,6 @@ def req_8(control):
     """
     # TODO: Modificar el requerimiento 8
     pass
-
 
 # Funciones para medir tiempos de ejecucion
 
