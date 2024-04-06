@@ -69,7 +69,7 @@ def load_data(control,size_archivo):
 
 def load_skills(catalog,arc):
     booksfile = cf.data_dir + str(arc+"-skills.csv")
-    input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
+    input_file = csv.DictReader(open(booksfile, encoding="utf-8"), delimiter=";")
     for skill in input_file:
         model.add_skills(catalog,skill)
    
