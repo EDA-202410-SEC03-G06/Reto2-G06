@@ -246,7 +246,11 @@ def req_4(catalog, pais, f_inicio, f_fin):
     empresas = lt.newList('ARRAY_LIST')
     f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d')
     f_fin = datetime.strptime(f_fin,'%Y-%m-%d')
-    ciudades = {}
+    ciudades = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
     for oferta in lt.iterator(ofertas):
         if pais == oferta['country_code']:
             empresa = oferta["company_name"]
@@ -255,6 +259,7 @@ def req_4(catalog, pais, f_inicio, f_fin):
             fecha_string = datetime.strftime(fecha_oferta,'%Y-%m-%d')
             fecha = datetime.strptime(fecha_string,'%Y-%m-%d')
             if (f_inicio <= fecha) and (fecha <= f_fin):
+                ciudad = oferta['city']
                 remote = oferta['workplace_type']
                 if 'remote' in remote:
                     oferta['remote'] = remote
@@ -266,13 +271,20 @@ def req_4(catalog, pais, f_inicio, f_fin):
                 if lt.isPresent(empresas, empresa) == 0:
                     lt.addLast(empresas, empresa)
                 
-                if oferta['city'] not in ciudades:
-                    ciudades[oferta['city']] = 1
+                if mp.contains(ciudades, ciudad) == False:
+                    mp.put(ciudades, ciudad, 1)
                 else:
-                    ciudades[oferta['city']] +=1
+                    tupla_city = mp.get(ciudades, oferta['city'])
+                    cantidad_ciudad = tupla_city[1]+1
+                    mp.put(ciudades, ciudad, cantidad_ciudad)
+                    
+                    
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
-    for city in ciudades.keys():
-        lt.addLast(ciudades_ordenadas, {'ciudad': city,'count': ciudades[city]})
+    ciudades_lista = mp.keySet(ciudades)
+    for city in lt.iterator(ciudades_lista):
+        tupla = mp.get(ciudades, city)
+        valor = tupla[1]
+        lt.addLast(ciudades_ordenadas, {'ciudad': city,'count': valor})
     merg.sort(ciudades_ordenadas, sort_criteria_req6y7)
     mayor = lt.firstElement(ciudades_ordenadas)
     ciudad_mayor = mayor["ciudad"]
