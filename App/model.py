@@ -251,7 +251,8 @@ def req_4(catalog, pais, f_inicio, f_fin):
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-    for oferta in lt.iterator(ofertas):
+    ofertas = mp.valueSet(ofertas)
+    for oferta in ofertas:
         if pais == oferta['country_code']:
             empresa = oferta["company_name"]
             
