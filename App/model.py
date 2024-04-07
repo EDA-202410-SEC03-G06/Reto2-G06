@@ -25,7 +25,7 @@
  """
 
 
-import datetime as datetime
+from datetime import datetime as datetime
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import stack as st
@@ -108,7 +108,7 @@ def add_skills(catalog, skills):
 def add_jobs(catalog, job):
     
     date = job['published_at']
-    job['published_at'] = datetime.datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
+    job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
     mp.put(catalog['jobs'],job['id'],job)
     
 def add_locations(catalog, location):
@@ -243,16 +243,21 @@ def req_4(catalog, pais, f_inicio, f_fin):
     # TODO: Realizar el requerimiento 4
     ofertas = catalog['jobs']
     ofertas_rango = lt.newList('ARRAY_LIST')
-    empresas = lt.newList('ARRAY_LIST')
-    f_inicio = datetime.datetime.strptime(f_inicio,'%Y-%m-%d')
-    f_fin = datetime.datetime.strptime(f_fin,'%Y-%m-%d')
+    empresas = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d')
+    f_fin = datetime.strptime(f_fin,'%Y-%m-%d')
     ciudades = mp.newMap(1000,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-    ofertas = mp.valueSet(ofertas)
-    for oferta in lt.iterator(ofertas):
+    ofertas_lista = mp.valueSet(ofertas)
+    
+    for oferta in lt.iterator(ofertas_lista):
         if pais == oferta['country_code']:
             empresa = oferta["company_name"]
             
@@ -269,23 +274,24 @@ def req_4(catalog, pais, f_inicio, f_fin):
                 lt.addLast(ofertas_rango, oferta)
                 empresa = oferta["company_name"]
 
-                if lt.isPresent(empresas, empresa) == 0:
-                    lt.addLast(empresas, empresa)
+                if mp.contains(empresas, empresa) == False:
+                    mp.put(empresas, empresa, True)
                 
                 if mp.contains(ciudades, ciudad) == False:
                     mp.put(ciudades, ciudad, 1)
                 else:
                     tupla_city = mp.get(ciudades, oferta['city'])
-                    cantidad_ciudad = tupla_city[1]+1
-                    mp.put(ciudades, ciudad, cantidad_ciudad)
+                    cantidad_ciudad = me.getValue(tupla_city)
+                    me.setValue(tupla_city, cantidad_ciudad+1)
                     
                     
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
     ciudades_lista = mp.keySet(ciudades)
     for city in lt.iterator(ciudades_lista):
         tupla = mp.get(ciudades, city)
-        valor = tupla[1]
-        lt.addLast(ciudades_ordenadas, {'ciudad': city,'count': valor})
+        valor = me.getKey(tupla)
+        city_name = me.getKey(tupla)
+        lt.addLast(ciudades_ordenadas, {'ciudad': city_name,'count': valor})
     merg.sort(ciudades_ordenadas, sort_criteria_req6y7)
     mayor = lt.firstElement(ciudades_ordenadas)
     ciudad_mayor = mayor["ciudad"]
@@ -293,14 +299,14 @@ def req_4(catalog, pais, f_inicio, f_fin):
     menor = lt.lastElement(ciudades_ordenadas)
     ciudad_menor = menor['ciudad']
     cuenta_ciudad_menor = menor['count']
-    
+    empresas_size = mp.keySet(empresas)
     ofertas_rango_criterios = lt.newList('ARRAY_LIST')
     for oferta in lt.iterator(ofertas_rango):
         datos = {'published_at': oferta['published_at'],'title':oferta['title'], 'experience_level': oferta['experience_level'],'company_name': oferta['company_name'],
                  'city': oferta['city'], 'workplace_type': oferta['workplace_type'],'remote': oferta['remote'],'open_to_hire_ukrainians': oferta['open_to_hire_ukrainians']}
         lt.addLast(ofertas_rango_criterios, datos)  
                
-    return lt.size(ofertas_rango), lt.size(empresas), lt.size(ciudades_ordenadas), (ciudad_mayor, cuenta_ciudad_mayor),(ciudad_menor,cuenta_ciudad_menor), ofertas_rango_criterios
+    return lt.size(ofertas_rango), lt.size(empresas_size), lt.size(ciudades_ordenadas), (ciudad_mayor, cuenta_ciudad_mayor),(ciudad_menor,cuenta_ciudad_menor), ofertas_rango_criterios
     
 
 

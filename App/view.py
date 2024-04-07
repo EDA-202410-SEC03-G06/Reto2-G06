@@ -142,7 +142,8 @@ def print_req_4(control):
     print(f"La ciudad con mayor numero de ofertas es {ciudad_mayor[0]} con un total de {ciudad_mayor[1]}")
     print(f"La ciudad con menor numero de ofertas es {ciudad_menor[0]} con un total de {ciudad_menor[1]}")
     
-    print(tabulate(catalogo['elements']))
+    
+    print(tabulate(catalogo['elements'][:5]))
 
 def print_req_5(control):
     """
