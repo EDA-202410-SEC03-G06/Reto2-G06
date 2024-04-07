@@ -79,8 +79,7 @@ def load_jobs(catalog,arc):
     booksfile = cf.data_dir + str(arc+"-jobs.csv")
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for job in input_file:
-        model.add_jobs(catalog,job)
-        
+        model.add_jobs(catalog,job)  
     
     #model.sort(catalog)
     return model.data_size(catalog['jobs'])
@@ -92,6 +91,7 @@ def load_locations(catalog,arc):
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for multilocation in input_file:
         model.add_locations(catalog, multilocation)
+
     return model.data_size(catalog['multi-locations'])
 
 def load_employment_type(catalog,arc):
@@ -163,7 +163,9 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     """
     # TODO: Modificar el requerimiento 3
     start_time = get_time()
-    lista = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+   # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
@@ -171,15 +173,15 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     junior = 0
     mid = 0
     senior = 0 
-    for oferta in model.lt.iterator(lista):
-        if oferta['experience_level']=='junior':
+    for oferta in model.lt.iterator(keys):
+        if oferta=='junior':
             junior +=1
-        elif oferta['experience_level']=='mid':
+        elif oferta=='mid':
             mid +=1
-        elif oferta['experience_level']=='senior':
+        elif oferta=='senior':
             senior +=1
         
-    return size, junior, mid, senior
+    return size, junior, mid, senior, lista
     
 
 

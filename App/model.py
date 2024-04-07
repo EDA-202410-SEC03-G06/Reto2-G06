@@ -25,7 +25,7 @@
  """
 
 
-import datetime as datetime
+from datetime import datetime as datetime
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import stack as st
@@ -108,7 +108,7 @@ def add_skills(catalog, skills):
 def add_jobs(catalog, job):
     
     date = job['published_at']
-    job['published_at'] = datetime.datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
+    job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
     mp.put(catalog['jobs'],job['id'],job)
     
 def add_locations(catalog, location):
@@ -155,7 +155,6 @@ def data_size(data_structs):
     
     return mp.size(data_structs)
 
-
 def req_1(catalog, n, pais, expert):
     """
     Función que soluciona el requerimiento 1
@@ -164,6 +163,10 @@ def req_1(catalog, n, pais, expert):
     ofertas = catalog['jobs']
     filtro = lt.newList('ARRAY_LIST')
     total_ofertas=0
+    
+    for oferta in awa:
+        print(oferta)
+        
     for oferta in lt.iterator(ofertas):
         if oferta['country_code'] ==pais and oferta['experience_level']==expert:
             lt.addLast(filtro, oferta)
@@ -210,30 +213,32 @@ def req_3(catalog, empresa, fecha_in, fecha_fin):
     Función que soluciona el requerimiento 3
     """
     # TODO: Realizar el requerimiento 3
-    ofertas = catalog['jobs']
+    ofertas = mp.valueSet(catalog['jobs'])
     final  = lt.newList('ARRAY_LIST')
-   
+    fecha_in = datetime.strptime(fecha_in,'%Y-%m-%d')
+    fecha_fin = datetime.strptime(fecha_fin,'%Y-%m-%d')
 
     for oferta in lt.iterator(ofertas):
         if empresa == oferta['company_name']:
-            date = oferta['published_at']
-            fecha = datetime.strftime(date,'%Y-%m-%d')
+            fecha_oferta = oferta['published_at']
+            fecha_string = datetime.strftime(fecha_oferta,'%Y-%m-%d')
+            fecha = datetime.strptime(fecha_string,'%Y-%m-%d')
             if fecha<=fecha_fin and fecha>=fecha_in:
                 lt.addLast(final,oferta)
-            elif fecha<fecha_in:
-                break
-            
-    filtro_2 = lt.newList('ARRAY_LIST')
-    for o in lt.iterator(final):
-        datos = {'published_at':o['published_at'],'title':o['title'],'experience_level':o['experience_level'],
-                 'city':o['city'],'country_code':o['country_code'],'company_size':o['company_size'], 
-                 'workplace_type':o['workplace_type'],'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        lt.addLast(filtro_2,datos)    
     
-    ins.sort(filtro_2, sort_criteria_req3)
+    print(final)         
+    filtro_2 = mp.newMap()
+    for o in lt.iterator(final):
+        #datos = {'published_at':o['published_at'],'title':o['title'],'experience_level':o['experience_level'],
+         #        'city':o['city'],'country_code':o['country_code'],'company_size':o['company_size'], 
+          #       'workplace_type':o['workplace_type'],'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
+        mp.put(filtro_2,o['experience_level'], o)
+        
+    keys = mp.keySet(filtro_2)
+    print(keys)
     print(filtro_2)
-            
-    return filtro_2
+    
+    return filtro_2, keys
 
 
 def req_4(catalog, pais, f_inicio, f_fin):
@@ -345,7 +350,7 @@ def req_6(data_structs, n, pais, experience, fecha_in, fecha_fin):
     ofertas = lt.newList('ARRAY_LIST')
     empresas = lt.newList('ARRAY_LIST')
     id_list = lt.newList('ARRAY_LIST')
-    city = {}
+    city = mp.newMap()
     cant_empresas = 0
     sal_promedio = 0
     div_salario = 0
