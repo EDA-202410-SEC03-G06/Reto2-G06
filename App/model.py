@@ -244,15 +244,15 @@ def req_4(catalog, pais, f_inicio, f_fin):
     ofertas = catalog['jobs']
     ofertas_rango = lt.newList('ARRAY_LIST')
     empresas = lt.newList('ARRAY_LIST')
-    f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d')
-    f_fin = datetime.strptime(f_fin,'%Y-%m-%d')
+    f_inicio = datetime.datetime.strptime(f_inicio,'%Y-%m-%d')
+    f_fin = datetime.datetime.strptime(f_fin,'%Y-%m-%d')
     ciudades = mp.newMap(1000,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
     ofertas = mp.valueSet(ofertas)
-    for oferta in ofertas:
+    for oferta in lt.iterator(ofertas):
         if pais == oferta['country_code']:
             empresa = oferta["company_name"]
             
