@@ -490,7 +490,7 @@ def req_7(catalog, n, año, mes):
         fecha_string = datetime.strftime(fecha_oferta,'%Y-%m')
         fecha = datetime.strptime(fecha_string,'%Y-%m')
         if fecha == año_mes_consulta:
-            lt.addLast(ofertas_rango, oferta)
+            mp.put(ofertas_rango, oferta_id, oferta)
             pais_oferta = oferta['country_code']
             if mp.contains(ofertas_paises, pais_oferta) == False:
                 mp.put(ofertas_paises, pais_oferta, 1)
@@ -498,26 +498,21 @@ def req_7(catalog, n, año, mes):
                 tupla_pais = mp.get(ofertas_paises, pais_oferta)
                 cantidad_pais = me.getValue(tupla_pais)
                 me.setValue(tupla_pais, cantidad_pais)
-     
+    
     paises_ordenados = lt.newList('ARRAY_LIST')
     paises_lista = mp.keySet(ofertas_paises)
     for country in lt.iterator(paises_lista):
         tupla_pais = mp.get(ofertas_paises, country)
-        valor_pais = me.getValue(tupla)
-        country_name = me.getKey(tupla)
-        lt.addLast(paises_ordenados, {'ciudad': country_name,'count': valor_pais})
+        valor_pais = me.getValue(tupla_pais)
+        country_name = me.getKey(tupla_pais)
+        lt.addLast(paises_ordenados, {'pais': country_name,'count': valor_pais})
     merg.sort(paises_ordenados, sort_criteria_req6y7)
-    top_n = mp.newMap(n,
-            maptype='CHAINING',
-            loadfactor=4,
-            cmpfunction=compareMapBookIds
-            )
     
-    pais_mayor = lt.firstElement(paises_ordenados)
-    tupla_pais_mayor = mp.get(ofertas_paises, pais_mayor)
-    cuenta_pais_mayor = me.getValue(tupla_pais_mayor)
+    info_pais_mayor = lt.firstElement(paises_ordenados)
+    pais_mayor =  info_pais_mayor['pais']
+    cuenta_pais_mayor = info_pais_mayor['count']
     
-    ciudades = mp.newMap(1000,
+    ciudades = mp.newMap(500,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
@@ -528,30 +523,52 @@ def req_7(catalog, n, año, mes):
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-    for id_oferta in lt.iterator(ofertas_jobs_id):
-        oferta_tupla = (ofertas_jobs, id_oferta)
-        oferta = me.getValue(oferta_tupla)
+    top_n = mp.newMap(n,
+            maptype='CHAINING',
+            loadfactor=4,
+            cmpfunction=compareMapBookIds
+            )
+    cuenta_top_n = 0
+    for country in lt.iterator(paises_ordenados):
+        pais = country['pais']
+        cuenta = country['count']
+        mp.put(top_n, pais, cuenta)
+        cuenta_top_n+=1
+        if cuenta_top_n == n:
+            break
+    for oferta_id in lt.iterator(ofertas_jobs_id):
+        pareja_oferta = mp.get(ofertas_jobs, oferta_id)
+        oferta = me.getValue(pareja_oferta)
+        
         pais_oferta = oferta['country_code']
-        ciudad = oferta['city']
         if mp.contains(top_n, pais_oferta) == True:
-            mp.put(ofertas_n_paises, id_oferta, oferta)
-            
-            if mp.contains(ciudades, ciudad) == False:
-                mp.put(ciudades, ciudad, 1)
-            else:
-                tupla_city = mp.get(ciudades, oferta['city'])
-                cantidad_ciudad = me.getValue(tupla_city)
-                me.setValue(tupla_city, cantidad_ciudad+1)
-# Criterios para retornar en ciudades
+            mp.put(ofertas_n_paises, oferta_id, oferta)
+    
+    ofertas_n_paises_keys = mp.keySet(ofertas_n_paises)
+    for id in lt.iterator(ofertas_n_paises_keys):
+        pareja_oferta_pais = mp.get(ofertas_n_paises, id)
+        oferta = me.getValue(pareja_oferta_pais)
+        ciudad = oferta['city']
+        if not mp.contains(ciudades, ciudad) :
+            mp.put(ciudades, ciudad, 1)
+        else:
+            tupla_city = mp.get(ciudades, ciudad)
+            cantidad_ciudad = me.getValue(tupla_city)+1
+            me.setValue(tupla_city, cantidad_ciudad)
+        
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
     ciudades_lista = mp.keySet(ciudades)
+    
     for city in lt.iterator(ciudades_lista):
         tupla = mp.get(ciudades, city)
         valor = me.getValue(tupla)
         city_name = me.getKey(tupla)
         lt.addLast(ciudades_ordenadas, {'ciudad': city_name,'count': valor})
-    numero_ciudades = lt.size(ciudades_lista)
+    merg.sort(ciudades_ordenadas, sort_criteria_req6y7)
+    
     ciudad_mayor_datos = lt.firstElement(ciudades_ordenadas)
+    
+    numero_ciudades = lt.size(ciudades_lista) 
     ciudad_mayor = ciudad_mayor_datos['ciudad']
     cuenta_ciudad_mayor = ciudad_mayor_datos['count']
 #Encontrar los skills y organizarlos
@@ -597,9 +614,10 @@ def req_7(catalog, n, año, mes):
     ofertas_n_paises_id = mp.keySet(ofertas_n_paises)
     total_ofertas = lt.size(ofertas_n_paises_id)
     for oferta_id in lt.iterator(ofertas_n_paises_id):
-        pareja_skill = mp.get(ofertas_skills, id_oferta)
+        pareja_skill = mp.get(ofertas_skills, oferta_id)
         skill = me.getValue(pareja_skill)
-        
+        oferta_pareja = mp.get(ofertas_jobs, oferta_id)
+        oferta = me.getValue(oferta_pareja)
         
         experiencia = oferta['experience_level']
         empresa = oferta['company_name']
@@ -608,43 +626,62 @@ def req_7(catalog, n, año, mes):
             suma_nivel_senior += int(skill['level'])
             total_ofertas_senior+=1
             habilidad = skill['name']
-            if mp.contains(skills_senior, habilidad):
-                skills_senior[habilidad]= 1
+            #habilidades senior
+            if mp.contains(skills_senior, habilidad)==False:
+                mp.put(skills_senior, habilidad, 1)
             else:
-                skills_senior[habilidad]+=1
-            
-            if empresa not in empresas_senior.keys():
-                empresas_senior[empresa] = 1
+                pareja_senior = mp.get(skills_senior, habilidad)
+                valor_senior = me.getValue(pareja_senior)
+                valor_senior+=1
+                me.setValue(pareja_senior, valor_senior)
+            #Empresas senior    
+            if mp.contains(empresas_senior, empresa) == False:
+                mp.put(empresas_senior, empresa, 1)
             else:
-                empresas_senior[empresa] +=1
+                pareja_empresa_senior = mp.get(empresas_senior, empresa)
+                valor_empresa_senior = me.getValue(pareja_empresa_senior)
+                valor_empresa_senior+=1
+                me.setValue(pareja_empresa_senior, valor_empresa_senior)
                   
-        elif experiencia == 'mid':
+        #mid
+        if experiencia == 'mid':
             suma_nivel_mid += int(skill['level'])
-            total_ofertas_mid +=1
+            total_ofertas_mid+=1
             habilidad = skill['name']
-            if habilidad not in skills_mid.keys():
-                skills_mid[habilidad]= 1
+            #habilidades mid
+            if mp.contains(skills_mid, habilidad)==False:
+                mp.put(skills_mid, habilidad, 1)
             else:
-                skills_mid[habilidad]+=1 
-                
-            if empresa not in empresas_mid.keys():
-                empresas_mid[empresa] = 1
+                pareja_mid = mp.get(skills_mid, habilidad)
+                valor_mid = me.getValue(pareja_mid)+1
+                me.setValue(pareja_mid, valor_mid)
+            #Empresas mid   
+            if mp.contains(empresas_mid, empresa) == False:
+                mp.put(empresas_mid, empresa, 1)
             else:
-                empresas_mid[empresa] +=1
-                
-        elif experiencia == 'junior':
+                pareja_empresa_mid = mp.get(empresas_mid, empresa)
+                valor_empresa_mid = me.getValue(pareja_empresa_mid)+1
+                me.setValue(pareja_empresa_mid, valor_empresa_mid)
+        
+        #junior
+        if experiencia == 'junior':
             suma_nivel_junior += int(skill['level'])
-            total_ofertas_junior += 1
+            total_ofertas_junior+=1
             habilidad = skill['name']
-            if habilidad not in skills_junior.keys():
-                skills_junior[habilidad]= 1
+            #habilidades junior
+            if mp.contains(skills_junior, habilidad)==False:
+                mp.put(skills_junior, habilidad, 1)
             else:
-                skills_junior[habilidad]+=1
-            
-            if empresa not in empresas_junior.keys():
-                empresas_junior[empresa] = 1
+                pareja_junior = mp.get(skills_junior, habilidad)
+                valor_junior = me.getValue(pareja_junior)+1
+                me.setValue(pareja_junior, valor_junior)
+            #Empresas junior    
+            if mp.contains(empresas_junior, empresa) == False:
+                mp.put(empresas_junior, empresa, 1)
             else:
-                empresas_junior[empresa] +=1
+                pareja_empresa_junior = mp.get(empresas_junior, empresa)
+                valor_empresa_junior = me.getValue(pareja_empresa_junior)+1
+                me.setValue(pareja_empresa_junior, valor_empresa_junior)
     
     promedio_junior = suma_nivel_junior//total_ofertas_junior
     promedio_mid = suma_nivel_mid//total_ofertas_mid
@@ -653,9 +690,10 @@ def req_7(catalog, n, año, mes):
     #Requerimientos por experiencia
     skills_senior_ordenadas = lt.newList('ARRAY_LIST')
     skills_senior_keys = mp.keySet(skills_senior)
-    for habilidad in skills_senior_keys:
-        pareja = mp.get(skills_senior, habilidad)
-        valor_senior_skill = me.getValue(pareja)
+    
+    for habilidad in lt.iterator(skills_senior_keys):
+        pareja_senior_skill = mp.get(skills_senior, habilidad)
+        valor_senior_skill = me.getValue(pareja_senior_skill)
         lt.addLast(skills_senior_ordenadas, {'skill': habilidad,'count': valor_senior_skill})
     merg.sort(skills_senior_ordenadas, sort_criteria_req6y7)
     
@@ -664,8 +702,11 @@ def req_7(catalog, n, año, mes):
     habilidad_menos_senior = lt.lastElement(skills_senior_ordenadas)
     
     skills_mid_ordenadas = lt.newList('ARRAY_LIST')
-    for habilidad in skills_mid.keys():
-        lt.addLast(skills_mid_ordenadas, {'skill': habilidad,'count': skills_mid[habilidad]})
+    skills_mid_keys = mp.keySet(skills_mid)
+    for habilidad in lt.iterator(skills_mid_keys):
+        pareja_mid_skill = mp.get(skills_mid, habilidad)
+        valor_mid_skill = me.getValue(pareja_mid_skill)
+        lt.addLast(skills_mid_ordenadas, {'skill': habilidad,'count': valor_mid_skill})
     merg.sort(skills_mid_ordenadas, sort_criteria_req6y7)
     
     habilidades_diferentes_mid = lt.size(skills_mid_ordenadas)
@@ -673,8 +714,11 @@ def req_7(catalog, n, año, mes):
     habilidad_menos_mid = lt.lastElement(skills_mid_ordenadas)
     
     skills_junior_ordenadas = lt.newList('ARRAY_LIST')
-    for habilidad in skills_junior.keys():
-        lt.addLast(skills_junior_ordenadas, {'skill': habilidad,'count': skills_junior[habilidad]})
+    skills_junior_keys = mp.keySet(skills_junior)
+    for habilidad in lt.iterator(skills_junior_keys):
+        pareja_junior_skill = mp.get(skills_junior, habilidad)
+        valor_junior_skill = me.getValue(pareja_junior_skill)
+        lt.addLast(skills_junior_ordenadas, {'skill': habilidad,'count': valor_junior_skill})
     merg.sort(skills_junior_ordenadas, sort_criteria_req6y7)
     
     habilidades_diferentes_junior = lt.size(skills_mid_ordenadas)
@@ -683,8 +727,11 @@ def req_7(catalog, n, año, mes):
     
     # empresas por experiencia
     empresas_senior_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_senior.keys():
-        lt.addLast(empresas_senior_ordenadas, {'empresa': empresa,'count': empresas_senior[empresa]})
+    empresas_senior_keys = mp.keySet(empresas_senior)
+    for empresa in lt.iterator(empresas_senior_keys):
+        pareja = mp.get(empresas_senior, empresa)
+        valor_senior_empresa = me.getValue(pareja)
+        lt.addLast(empresas_senior_ordenadas, {'empresa': habilidad,'count': valor_senior_empresa})
     merg.sort(empresas_senior_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_senior = lt.size(empresas_senior_ordenadas)
@@ -692,8 +739,11 @@ def req_7(catalog, n, año, mes):
     empresa_menos_senior = lt.lastElement(empresas_senior_ordenadas)
     
     empresas_mid_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_mid.keys():
-        lt.addLast(empresas_mid_ordenadas, {'empresa': empresa,'count': empresas_mid[empresa]})
+    empresas_mid_keys = mp.keySet(empresas_mid)
+    for habilidad in lt.iterator(empresas_mid_keys):
+        pareja = mp.get(empresas_mid, habilidad)
+        valor_mid_empresas = me.getValue(pareja)
+        lt.addLast(empresas_mid_ordenadas, {'empresa': habilidad,'count': valor_mid_empresas})
     merg.sort(empresas_mid_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_mid = lt.size(empresas_mid_ordenadas)
@@ -701,8 +751,11 @@ def req_7(catalog, n, año, mes):
     empresa_menos_mid = lt.lastElement(empresas_mid_ordenadas)
 
     empresas_junior_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_junior.keys():
-        lt.addLast(empresas_junior_ordenadas, {'empresa': empresa,'count': empresas_junior[empresa]})
+    empresas_junior_keys = mp.keySet(empresas_junior)
+    for empresa in lt.iterator(empresas_junior_keys):
+        pareja = mp.get(empresas_junior, empresa)
+        valor_junior_empresa = me.getValue(pareja)
+        lt.addLast(empresas_junior_ordenadas, {'empresa': habilidad,'count': valor_junior_empresa})
     merg.sort(empresas_junior_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_junior = lt.size(empresas_junior_ordenadas)
