@@ -208,7 +208,7 @@ def req_6(control,n,exp,fecha):
     # TODO: Modificar el requerimiento 6
     start_time = get_time()
     #ofertas = model.req_6(control['model'],n,exp,fecha)
-    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],20,'mid','2022')
+    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],40,'mid','2022')
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
