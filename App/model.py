@@ -226,18 +226,27 @@ def req_3(catalog, empresa, fecha_in, fecha_fin):
             if fecha<=fecha_fin and fecha>=fecha_in:
                 lt.addLast(final,oferta)
     
-    print(final)         
     filtro_2 = mp.newMap()
+    keys = mp.newMap()
+    junior = 0
+    mid = 0
+    senior = 0
     for o in lt.iterator(final):
-        #datos = {'published_at':o['published_at'],'title':o['title'],'experience_level':o['experience_level'],
-         #        'city':o['city'],'country_code':o['country_code'],'company_size':o['company_size'], 
-          #       'workplace_type':o['workplace_type'],'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        mp.put(filtro_2,o['experience_level'], o)
-        
-    keys = mp.keySet(filtro_2)
-    print(keys)
-    print(filtro_2)
-    
+        datos = {'published_at':o['published_at'],'title':o['title'],'experience_level':o['experience_level'],
+                 'city':o['city'],'country_code':o['country_code'],'company_size':o['company_size'], 
+                 'workplace_type':o['workplace_type'],'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
+        mp.put(filtro_2,o['id'], datos)
+        if o['experience_level']=='junior':
+            junior +=1
+        elif o['experience_level']=='mid':
+            mid +=1
+        elif o['experience_level']=='senior':
+            senior +=1
+            
+    mp.put(keys,'junior',junior)
+    mp.put(keys,'mid',mid)
+    mp.put(keys,'senior',senior)
+
     return filtro_2, keys
 
 
@@ -339,13 +348,13 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     return (cantidad_ofertas, cant_empresas, mayor, menor, ultima_respuesta)
 
 
-def req_6(data_structs, n, pais, experience, fecha_in, fecha_fin):
+def req_6(data_structs, n, pais, experience, fecha):
     """
     Función que soluciona el requerimiento 6
     """
     # TODO: Realizar el requerimiento 
-    catalog = data_structs['jobs']
-    emptypes = data_structs['employment-types']
+    catalog = mp.valueSet(data_structs['jobs'])
+    emptypes = mp.valueSet(data_structs['employment-types'])
     ciudades = lt.newList('ARRAY_LIST')
     ofertas = lt.newList('ARRAY_LIST')
     empresas = lt.newList('ARRAY_LIST')
@@ -355,38 +364,25 @@ def req_6(data_structs, n, pais, experience, fecha_in, fecha_fin):
     sal_promedio = 0
     div_salario = 0
 #filtrar con pais
-    if pais != None: 
-        for oferta in lt.iterator(catalog):
+  
+    for oferta in lt.iterator(catalog):
          
-            if pais == oferta['country_code'] and experience == oferta['experience_level']:
-                date = oferta['published_at']
-                fecha = datetime.strftime(date,'%Y-%m-%d')
-                if fecha<=fecha_fin and fecha>=fecha_in:
-                 
-                    if oferta['city'] not in city:
-                        city[oferta['city']] = 1
-                        lt.addLast(ofertas,oferta)     
-                        
-                    elif oferta['city']  in city:
-                        lt.addLast(ofertas,oferta)
-                        city[oferta['city']] += 1
-
-#filtrar sin pais        
-    else:
-        for oferta in lt.iterator(catalog):
+        if pais == oferta['country_code'] and experience == oferta['experience_level']:
             date = oferta['published_at']
-            fecha = datetime.strftime(date,'%Y-%m-%d')
-            if  experience == oferta['experience_level'] and fecha<=fecha_fin and fecha>=fecha_in:
-                    
-                    if oferta['city'] not in city:
-                        city[oferta['city']] = 1
+            fecha_oferta = datetime.strftime(date,'%Y')
+            if fecha_oferta==fecha:
+                 
+                    ispresent = mp.contains(city,oferta['city'])
+                    if ispresent==False:
+                        mp.put(city,oferta['city'],1)
                         lt.addLast(ofertas,oferta)     
                         
-                    elif oferta['city']  in city:
-                        lt.addLast(ofertas,oferta)
-                        city[oferta['city']] += 1
-    
-      
+                    if ispresent:
+                        pareja = mp.get(city,oferta['city'])
+                        valor = me.getValue(pareja)
+                        valor +=1
+                        me.setValue(pareja, valor)
+                            
        
 # sort a ciudades
     for ciudad in city.keys():

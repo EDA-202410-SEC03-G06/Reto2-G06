@@ -170,16 +170,10 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
     size = model.data_size(lista)
-    junior = 0
-    mid = 0
-    senior = 0 
-    for oferta in model.lt.iterator(keys):
-        if oferta=='junior':
-            junior +=1
-        elif oferta=='mid':
-            mid +=1
-        elif oferta=='senior':
-            senior +=1
+    junior = model.mp.get(keys,'junior') 
+    mid = model.mp.get(keys,'mid')
+    senior= model.mp.get(keys,'senior')
+  
         
     return size, junior, mid, senior, lista
     
