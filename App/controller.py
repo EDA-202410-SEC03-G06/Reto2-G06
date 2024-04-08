@@ -135,7 +135,8 @@ def req_1(control,n,pais,exp):
     print(deltaTime,"[ms]")
     size = model.data_size(lista)
     
-    return size, lista
+    return size, lista 
+
 
 
 def req_2(control, n , empresa, city):

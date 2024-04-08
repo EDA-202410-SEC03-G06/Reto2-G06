@@ -161,23 +161,34 @@ def req_1(catalog, n, pais, expert):
     Función que soluciona el requerimiento 1
     """
     # TODO: Realizar el requerimiento 1
-    ofertas = catalog['jobs']
+    ofertas = mp.valueSet(catalog['jobs'])
     filtro = lt.newList('ARRAY_LIST')
-    total_ofertas=0
+    
+    total_ofertas_pais=0
+    total_ofertas_condicion=0
     for oferta in lt.iterator(ofertas):
+        if oferta["country_code"] == pais:
+            total_ofertas_pais+=1
         if oferta['country_code'] ==pais and oferta['experience_level']==expert:
             lt.addLast(filtro, oferta)
-            total_ofertas+=1
-            if total_ofertas>=n:
+            total_ofertas_condicion+=1
+            if total_ofertas_condicion>=n:
                 break
-            
-    filtro_2 = lt.newList('ARRAY_LIST')
+    
+        
+    filtro_2 = mp.newMap()
     for o in lt.iterator(filtro):
-        datos = {'title':o['title'],'company_name':o['company_name'],'experience_level':o['experience_level'],
+        datos = {'published_at': o['published_at'],'title':o['title'],'company_name':o['company_name'],'experience_level':o['experience_level'],
                  'country_code':o['country_code'],'city':o['city'],'company_size':o['company_size'],
                  'workplace_type':o['workplace_type'], 'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        lt.addLast(filtro_2,datos)
-    return filtro_2 
+        mp.put(filtro_2,o["id"],datos)
+    
+    if mp.size(filtro_2) > 10:
+        final= (filtro_2[0:5], filtro_2[-5:-1])
+    else:
+        final= filtro_2
+    
+    return (total_ofertas_pais, total_ofertas_condicion, filtro_2 )
 
 
 def req_2(catalog, n, empresa, ciudad):
@@ -296,30 +307,32 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     Función que soluciona el requerimiento 5
     """
     # TODO: Realizar el requerimiento 5
-    ofertas = catalog['jobs']
+    ofertas = mp.valueSet(catalog['jobs'])
+    print(ofertas)
     ofertas_filtradas  = lt.newList('ARRAY_LIST')
-    empresas= lt.newList("ARRAY_LIST")
-    mayor_numero_empresas = {}
+    mayor_numero_empresas = mp.newMap()
     numero_empresas_ordenadas = lt.newList("ARRAY_LIST")
  
+ #total de ofertas
     for oferta in lt.iterator(ofertas):
         fecha= datetime.strftime(oferta["published_at"], "%Y-%m-%d")
         if city == oferta['city'] and fecha<=fecha_fin and fecha>=fecha_in:
             empresa = oferta["company_name"]
             lt.addLast(ofertas_filtradas,oferta)
-            if empresa not in mayor_numero_empresas.keys():
+            #total de empresas
+            
+            if empresa not in mayor_numero_empresas.keySet():
                 mayor_numero_empresas[oferta["company_name"]] = 1
             elif empresa in mayor_numero_empresas.keys(): 
-                mayor_numero_empresas[oferta["company_name"]] +=1
+                mayor_numero_empresas[oferta["company_name"]] +=1 
     cantidad_ofertas= lt.size(ofertas_filtradas)        
                     
                     
+    mapa = mp.newMap()
     for empresa in mayor_numero_empresas.keys():
         lt.addLast(numero_empresas_ordenadas, {"empresa":empresa, "count":mayor_numero_empresas[empresa]})
-    merg.sort(numero_empresas_ordenadas, sort_criteria_req6y7)
-    cant_empresas= lt.size(numero_empresas_ordenadas)
-    mayor= lt.firstElement(numero_empresas_ordenadas)
-    menor= lt.lastElement(numero_empresas_ordenadas)
+    
+    
     
     ultima_respuesta = lt.newList('ARRAY_LIST')
     for llave in lt.iterator(ultima_respuesta):

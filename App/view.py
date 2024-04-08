@@ -94,7 +94,6 @@ def print_req_1(control):
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
     tup = controller.req_1(control, n, pais, exp)
     catalog = tup[1]
-    ofertas = catalog['elements']
     
    # print(tabulate(ofertas, headers='keys'))
     #print(ofertas)
@@ -258,7 +257,9 @@ if __name__ == "__main__":
         elif int(inputs) == 2:
 
             tup = print_req_1(control)
-            print('La cantidad de ofertas segun el nivel de experiencia que escogio: ',tup[0])
+            print('La cantidad de ofertas en el pais que escogio: ',tup[0])
+            print('La cantidad de ofertas según la condición escogida', tup[1])
+            print(tup[2])
             
         elif int(inputs) == 3:
 
