@@ -436,7 +436,12 @@ def req_6(data_structs, n, experience, fecha):
                 new_map = mp.newMap()
                 mp.put(new_map,oferta['id'],oferta)
                 mp.put(filtro,oferta['city'],new_map)
+                
             total_ofertas+=1
+            present_empresa = lt.isPresent(empresas,oferta['company_name'])
+            if present_empresa==0:
+                lt.addLast(empresas,oferta['company_name']) 
+                cant_empresas +=1
             
     
 
@@ -459,13 +464,10 @@ def req_6(data_structs, n, experience, fecha):
         empresas_ciudad = lt.newList('ARRAY_LIST')
         for oferta in lt.iterator(values):
             #contar empresas en total
-            present_empresa = lt.isPresent(empresas,oferta['company_name'])
-            if present_empresa==False:
-                lt.addLast(empresas,oferta['company_name']) 
-                cant_empresas +=1
+
             #contar empresas por ciudad
             ciudad_present = lt.isPresent(empresas_ciudad,oferta['company_name'])
-            if ciudad_present==False:
+            if ciudad_present==0:
                 lt.addLast(empresas_ciudad,oferta['company_name']) 
                 num_empresas +=1
             #contar promedio
