@@ -221,13 +221,13 @@ def req_6(control,n,pais,exp,fecha_in,fecha_fin):
 
 
 
-def req_7(control, n, f_inicio, f_fin):
+def req_7(control, n, año, mes):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
     start_time = get_time()
-    ofertas = model.req_7(control['model'], n, f_inicio, f_fin)
+    ofertas = model.req_7(control['model'], n, año, mes)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")
