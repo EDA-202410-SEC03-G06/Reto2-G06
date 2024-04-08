@@ -164,8 +164,7 @@ def req_1(catalog, n, pais, expert):
     filtro = lt.newList('ARRAY_LIST')
     total_ofertas=0
     
-    for oferta in awa:
-        print(oferta)
+ 
         
     for oferta in lt.iterator(ofertas):
         if oferta['country_code'] ==pais and oferta['experience_level']==expert:
@@ -354,7 +353,7 @@ def req_6(data_structs, n, experience, fecha):
     """
     # TODO: Realizar el requerimiento 
     catalog = mp.valueSet(data_structs['jobs'])
-    emptypes = mp.valueSet(data_structs['employment-types'])
+    #emptypes = mp.valueSet(data_structs['employment-types'])
     ciudades = lt.newList('ARRAY_LIST')
     ofertas = lt.newList('ARRAY_LIST')
     empresas = lt.newList('ARRAY_LIST')
@@ -403,7 +402,6 @@ def req_6(data_structs, n, experience, fecha):
     sub = lt.subList(ciudades,0,lt.size(lista_de_n_cities)+1)
     menor = lt.lastElement(sub)
     
-    print(lista_de_n_cities)
 #lista filtrada con las ciudades
     filtro = mp.newMap()
     total_ofertas = 0
@@ -417,41 +415,67 @@ def req_6(data_structs, n, experience, fecha):
             if (mp.contains(filtro,oferta['city']))==False:
                 new_map = mp.newMap()
                 mp.put(new_map,oferta['id'],oferta)
-                mp.put(filtro,ciudad['city'],new_map)
+                mp.put(filtro,oferta['city'],new_map)
             total_ofertas+=1
             
     
 
 #contar empresas y sacar id  
-
-    
-    
-
  
 #lista de ciudades
-   
-    for ciudad in lt.iterator(lista_de_n_cities):    
-        values = mp.valueSet(ciudad)
-        promedio = 0
-        div_salario = 0
+    lista_c = mp.newMap()
+    for ciudad in lt.iterator(lista_de_n_cities):  
+        pareja_dict = mp.get(filtro,ciudad)  
+        valores = me.getValue(pareja_dict)
+        values = mp.valueSet(valores)
+        div_salario = 1
         num_empresas = 0
         total = 0
-        mejor = ''
-        peor = ''
+        mejor = 0
+        mejor_id =''
+        peor = 999999
+        peor_id =''
+        pais = ''
+        empresas_ciudad = lt.newList('ARRAY_LIST')
         for oferta in lt.iterator(values):
+            #contar empresas en total
             present_empresa = lt.isPresent(empresas,oferta['company_name'])
             if present_empresa==False:
                 lt.addLast(empresas,oferta['company_name']) 
-            cant_empresas +=1
-            #contar por ciudad
-            total+=1
-            
-        pass
+                cant_empresas +=1
+            #contar empresas por ciudad
+            ciudad_present = lt.isPresent(empresas_ciudad,oferta['company_name'])
+            if ciudad_present==False:
+                lt.addLast(empresas_ciudad,oferta['company_name']) 
+                num_empresas +=1
+            #contar promedio
+            pareja = mp.get(data_structs['employment-types'],oferta['id'])
+            emp= me.getValue(pareja)
+            if emp['salary_from']!='':
+                sal_promedio+= ( ( int(emp['salary_from'])+ int(emp['salary_to'])) )/2
+                div_salario +=1
+                if int(emp['salary_from'])<peor:
+                    peor = int(emp['salary_from'])
+                    peor_id = emp['id']
+                if int(emp['salary_from'])>mejor:
+                    mejor = int(emp['salary_to'])
+                    mejor_id = emp['id']
 
-    
-   
-        
-    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor)                                 
+            total +=1
+            pais = oferta['country_code']
+            
+        info = mp.newMap()    
+        mp.put(info,'city',ciudad)
+        mp.put(info,'country',pais)
+        mp.put(info,'promedio',(sal_promedio/div_salario))
+        mp.put(info,'total',total)
+        mp.put(info,'company_num',num_empresas)
+        pp = mp.get(data_structs['jobs'],peor_id)
+        mp.put(info,'salary_from',pp)
+        pm = mp.get(data_structs['jobs'],mejor_id)
+        mp.put(info,'salary_from',pm)
+        mp.put(lista_c,ciudad,info)
+    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c)                                 
     
 
 
