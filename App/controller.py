@@ -129,29 +129,27 @@ def req_1(control,n,pais,exp):
     """
     # TODO: Modificar el requerimiento 1
     start_time = get_time()
-    lista = model.req_1(control['model'],n,pais,exp)
+    lista1 = model.req_1(control['model'],n,pais,exp)
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
-    size = model.data_size(lista)
-    
-    return size, lista 
+    return lista1
 
 
 
-def req_2(control, n , empresa, city):
+def req_2(control, n , empresa, ciudad):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
     start_time = get_time()
-    lista = model.req_2(control['model'],n , empresa, city)
+    lista = model.req_2(control['model'],n , empresa, ciudad)
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
-    size = model.data_size(lista)
+    
 
-    return size, lista 
+    return lista 
 
 
 def req_3(control,empresa,fecha_in,fecha_fin):

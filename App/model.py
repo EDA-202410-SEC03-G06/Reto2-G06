@@ -181,12 +181,11 @@ def req_1(catalog, n, pais, expert):
         datos = {'published_at': o['published_at'],'title':o['title'],'company_name':o['company_name'],'experience_level':o['experience_level'],
                  'country_code':o['country_code'],'city':o['city'],'company_size':o['company_size'],
                  'workplace_type':o['workplace_type'], 'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        mp.put(filtro_2,o["id"],datos)
-    
-    if mp.size(filtro_2) > 10:
-        final= (filtro_2[0:5], filtro_2[-5:-1])
-    else:
-        final= filtro_2
+        if lt.size(filtro_2) > 10:
+            final= (datos[0:5], datos[-5:-1])
+        else:
+            final= datos
+        mp.put(filtro_2,o["id"],final)
     
     return (total_ofertas_pais, total_ofertas_condicion, filtro_2 )
 
@@ -196,8 +195,9 @@ def req_2(catalog, n, empresa, ciudad):
     Función que soluciona el requerimiento 2
     """
     # TODO: Realizar el requerimiento 2
-    ofertas = catalog['jobs']
+    ofertas = mp.valueSet(catalog['jobs'])
     filtro = lt.newList('ARRAY_LIST')
+    
     total_ofertas=0
     for oferta in lt.iterator(ofertas):
         if oferta['city'] ==ciudad and oferta['company_name']==empresa:
@@ -206,14 +206,14 @@ def req_2(catalog, n, empresa, ciudad):
             if total_ofertas>=n:
                 break
             
-    filtro_2 = lt.newList('ARRAY_LIST')
+    filtro_2 = mp.newMap()
     for o in lt.iterator(filtro):
         datos = {'published_at':o['published_at'],'country_code':o['country_code'],'city':o['city'],
                  'company_name':o['company_name'],'title':o['title'], 'experience_level':o['experience_level'],
                  'remote_interview':o['remote_interview'],'workplace_type':o['workplace_type']}
-        lt.addLast(filtro_2,datos)    
+        mp.put(filtro_2, o['id'], datos)
     
-    return filtro_2
+    return (total_ofertas, filtro_2)
 
 
 def req_3(catalog, empresa, fecha_in, fecha_fin):
