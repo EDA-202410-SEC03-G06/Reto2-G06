@@ -162,9 +162,8 @@ def print_req_6(control):
     # TODO: Imprimir el resultado del requerimiento 6
     exp = input('Que nivel de experiencia busca?(junior,mid,senior): ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
-    fecha_in= input('Escriba el anio') 
-    if pais == '0':
-        pais = None
+    fecha= input('Escriba el anio') 
+
     ofertas = controller.req_6(control,n, exp, fecha)
     cantidad_ciudades = ofertas[1]
     empresas = ofertas[2]
