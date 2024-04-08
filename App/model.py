@@ -315,16 +315,16 @@ def req_5(catalog, city, fecha_in, fecha_fin):
  
  #total de ofertas
     for oferta in lt.iterator(ofertas):
-        fecha= datetime.strftime(oferta["published_at"], "%Y-%m-%d")
+        fecha= datetime.strftime(oferta['published_at'], '%Y-%m-%d')
         if city == oferta['city'] and fecha<=fecha_fin and fecha>=fecha_in:
-            empresa = oferta["company_name"]
+            empresa = oferta['company_name']
             lt.addLast(ofertas_filtradas,oferta)
             #total de empresas
             
             if empresa not in mayor_numero_empresas.keySet():
-                mayor_numero_empresas[oferta["company_name"]] = 1
+                mayor_numero_empresas[oferta['company_name']] = 1
             elif empresa in mayor_numero_empresas.keys(): 
-                mayor_numero_empresas[oferta["company_name"]] +=1 
+                mayor_numero_empresas[oferta['company_name']] +=1 
     cantidad_ofertas= lt.size(ofertas_filtradas)        
                     
                     
