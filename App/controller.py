@@ -201,13 +201,13 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     
     return prueba
 
-def req_6(control,n,pais,exp,fecha_in,fecha_fin):
+def req_6(control,n,exp,fecha):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
     start_time = get_time()
-    ofertas = model.req_6(control['model'],n,pais,exp,fecha_in,fecha_fin)
+    ofertas = model.req_6(control['model'],n,exp,fecha)
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")

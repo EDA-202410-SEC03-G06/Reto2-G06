@@ -348,7 +348,7 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     return (cantidad_ofertas, cant_empresas, mayor, menor, ultima_respuesta)
 
 
-def req_6(data_structs, n, pais, experience, fecha):
+def req_6(data_structs, n, experience, fecha):
     """
     Función que soluciona el requerimiento 6
     """
@@ -385,8 +385,11 @@ def req_6(data_structs, n, pais, experience, fecha):
                             
        
 # sort a ciudades
-    for ciudad in city.keys():
-        lt.addLast(ciudades,{'city':ciudad,'count':city[ciudad]})     
+    city_keys = mp.keySet(city)
+    for ciudad in city_keys:
+        pareja = mp.get(city,ciudad)
+        count = me.getValue(pareja)
+        lt.addLast(ciudades,{'city':ciudad,'count':count})     
            
     merg.sort(ciudades,sort_criteria_req6y7)
     lista_de_n_cities = lt.newList('ARRAY_LIST')
@@ -401,26 +404,25 @@ def req_6(data_structs, n, pais, experience, fecha):
     menor = lt.lastElement(sub)
     
 #lista filtrada con las ciudades
-    filtro = lt.newList('ARRAY_LIST')
+    filtro = mp.newMap()
     for oferta in lt.iterator(ofertas):
         present = lt.isPresent(lista_de_n_cities,oferta['city'])
         if present>0:
-            lt.addLast(filtro,oferta)
-    total_ofertas = lt.size(filtro)
+            mp.put(filtro,oferta['id'],oferta)
+    total_ofertas = data_size(filtro)
 
 #contar empresas y sacar id  
-    for oferta in lt.iterator(filtro):
-        present_empresa = lt.isPresent(empresas,oferta['company_name'])
-        if present_empresa==0:
+    filtro_value= mp.valueSet(filtro)
+    for oferta in lt.iterator(filtro_value):
+        present_empresa = mp.contains(empresas,oferta['company_name'])
+        if present_empresa==False:
             lt.addLast(empresas,oferta['company_name']) 
             cant_empresas +=1
-        lt.addLast(id_list,oferta['id'])
           
     
     #promedio salario
-    id_set = set(id_list['elements'])
-    if pais!=None:
-        for oferta in lt.iterator(emptypes):
+   
+    for oferta in lt.iterator(emptypes):
             #present_id = lt.isPresent(id_set,oferta['id'])
             if oferta['id'] in id_set and oferta['salary_from']!='':
                 sal_promedio+= int(oferta['salary_from'])
@@ -429,13 +431,9 @@ def req_6(data_structs, n, pais, experience, fecha):
     promedio = sal_promedio//div_salario
 
     
-    
-    #devolver catalogo ciudades
-    catalogo_ciudades = lt.newList('ARRAY_LIST')
-    #for ciudad in lt.iterator(sub):
-    #    lt.addLast(catalogo_ciudades,{'city':ciudad['city'],'ofertas':ciudad['count']})
+   
         
-    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor, promedio)                                 
+    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor)                                 
     
 
 
