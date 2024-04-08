@@ -493,24 +493,29 @@ def req_7(catalog, n, año, mes):
             lt.addLast(ofertas_rango, oferta)
             pais_oferta = oferta['country_code']
             if mp.contains(ofertas_paises, pais_oferta) == False:
-                mp.put(ciudades, pais_oferta, 1)
+                mp.put(ofertas_paises, pais_oferta, 1)
             else:
-                tupla_city = mp.get(ciudades, oferta['city'])
-                cantidad_ciudad = me.getValue(tupla_city)
-                me.setValue(tupla_city, cantidad_ciudad)
-    paises_organizados = lt.newList('ARRAY_LIST')  
-    for pais in ofertas_paises.keys():
-        lt.addLast(paises_organizados, {'pais': pais,'count': ofertas_paises[pais]})
-    merg.sort(paises_organizados, sort_criteria_req6y7)
-    top_n = lt.newList('ARRAY_LIST')
-    i= 1
-    while lt.size(top_n) < n:
-        element = lt.getElement(paises_organizados, i)
-        lt.addLast(top_n, element['pais'])
-        i+=1
+                tupla_pais = mp.get(ofertas_paises, pais_oferta)
+                cantidad_pais = me.getValue(tupla_pais)
+                me.setValue(tupla_pais, cantidad_pais)
+     
+    paises_ordenados = lt.newList('ARRAY_LIST')
+    paises_lista = mp.keySet(ofertas_paises)
+    for country in lt.iterator(paises_lista):
+        tupla_pais = mp.get(ofertas_paises, country)
+        valor_pais = me.getValue(tupla)
+        country_name = me.getKey(tupla)
+        lt.addLast(paises_ordenados, {'ciudad': country_name,'count': valor_pais})
+    merg.sort(paises_ordenados, sort_criteria_req6y7)
+    top_n = mp.newMap(n,
+            maptype='CHAINING',
+            loadfactor=4,
+            cmpfunction=compareMapBookIds
+            )
     
-    pais_mayor = lt.firstElement(top_n)
-    cuenta_pais_mayor = ofertas_paises[pais_mayor]
+    pais_mayor = lt.firstElement(paises_ordenados)
+    tupla_pais_mayor = mp.get(ofertas_paises, pais_mayor)
+    cuenta_pais_mayor = me.getValue(tupla_pais_mayor)
     
     ciudades = mp.newMap(1000,
                          maptype='CHAINING',
@@ -518,10 +523,18 @@ def req_7(catalog, n, año, mes):
                          cmpfunction=compareMapBookIds
                          )
     
-    ofertas_n_paises = lt.newList()
-    for oferta in lt.iterator(ofertas_rango):
-        if lt.isPresent(top_n, oferta['country_code']) != 0:
-            lt.addLast(ofertas_n_paises, oferta)
+    ofertas_n_paises = mp.newMap(5000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    for id_oferta in lt.iterator(ofertas_jobs_id):
+        oferta_tupla = (ofertas_jobs, id_oferta)
+        oferta = me.getValue(oferta_tupla)
+        pais_oferta = oferta['country_code']
+        ciudad = oferta['city']
+        if mp.contains(top_n, pais_oferta) == True:
+            mp.put(ofertas_n_paises, id_oferta, oferta)
             
             if mp.contains(ciudades, ciudad) == False:
                 mp.put(ciudades, ciudad, 1)
@@ -529,27 +542,30 @@ def req_7(catalog, n, año, mes):
                 tupla_city = mp.get(ciudades, oferta['city'])
                 cantidad_ciudad = me.getValue(tupla_city)
                 me.setValue(tupla_city, cantidad_ciudad+1)
-    total_ofertas = lt.size(ofertas_n_paises)
 # Criterios para retornar en ciudades
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
     ciudades_lista = mp.keySet(ciudades)
     for city in lt.iterator(ciudades_lista):
         tupla = mp.get(ciudades, city)
-        valor = me.getKey(tupla)
+        valor = me.getValue(tupla)
         city_name = me.getKey(tupla)
         lt.addLast(ciudades_ordenadas, {'ciudad': city_name,'count': valor})
+    numero_ciudades = lt.size(ciudades_lista)
+    ciudad_mayor_datos = lt.firstElement(ciudades_ordenadas)
+    ciudad_mayor = ciudad_mayor_datos['ciudad']
+    cuenta_ciudad_mayor = ciudad_mayor_datos['count']
 #Encontrar los skills y organizarlos
-    skills_junior = mp.newMap(100,
+    skills_junior = mp.newMap(1000,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-    skills_mid = mp.newMap(100,
+    skills_mid = mp.newMap(1000,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-    skills_senior = mp.newMap(100,
+    skills_senior = mp.newMap(1000,
                          maptype='CHAINING',
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
@@ -578,11 +594,9 @@ def req_7(catalog, n, año, mes):
                          loadfactor=4,
                          cmpfunction=compareMapBookIds
                          )
-           
-    
-    for oferta in lt.iterator(ofertas_n_paises):
-        id_oferta = oferta['id']
-        
+    ofertas_n_paises_id = mp.keySet(ofertas_n_paises)
+    total_ofertas = lt.size(ofertas_n_paises_id)
+    for oferta_id in lt.iterator(ofertas_n_paises_id):
         pareja_skill = mp.get(ofertas_skills, id_oferta)
         skill = me.getValue(pareja_skill)
         
