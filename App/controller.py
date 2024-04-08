@@ -79,8 +79,7 @@ def load_jobs(catalog,arc):
     booksfile = cf.data_dir + str(arc+"-jobs.csv")
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for job in input_file:
-        model.add_jobs(catalog,job)
-        
+        model.add_jobs(catalog,job)  
     
     #model.sort(catalog)
     return model.data_size(catalog['jobs'])
@@ -92,6 +91,7 @@ def load_locations(catalog,arc):
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for multilocation in input_file:
         model.add_locations(catalog, multilocation)
+
     return model.data_size(catalog['multi-locations'])
 
 def load_employment_type(catalog,arc):
@@ -163,23 +163,19 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     """
     # TODO: Modificar el requerimiento 3
     start_time = get_time()
-    lista = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+   # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
     size = model.data_size(lista)
-    junior = 0
-    mid = 0
-    senior = 0 
-    for oferta in model.lt.iterator(lista):
-        if oferta['experience_level']=='junior':
-            junior +=1
-        elif oferta['experience_level']=='mid':
-            mid +=1
-        elif oferta['experience_level']=='senior':
-            senior +=1
+    junior = model.mp.get(keys,'junior') 
+    mid = model.mp.get(keys,'mid')
+    senior= model.mp.get(keys,'senior')
+  
         
-    return size, junior, mid, senior
+    return size, junior, mid, senior, lista
     
 
 
@@ -205,18 +201,25 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     
     return prueba
 
-def req_6(control,n,pais,exp,fecha_in,fecha_fin):
+def req_6(control,n,exp,fecha):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
     start_time = get_time()
-    ofertas = model.req_6(control['model'],n,pais,exp,fecha_in,fecha_fin)
+    #ofertas = model.req_6(control['model'],n,exp,fecha)
+    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],20,'mid','2022')
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    llaves = model.mp.valueSet(lista_c)
+    for ciudad in model.lt.iterator(llaves):
+        llave = model.mp.valueSet(ciudad)
+        for element in model.lt.iterator(llave):
+            print(element)
+            
 
-    return ofertas
+    return total_ofertas, cant_ciudades, cant_empresas, mayor, menor
 
 
 

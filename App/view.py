@@ -163,22 +163,17 @@ def print_req_6(control):
     # TODO: Imprimir el resultado del requerimiento 6
     exp = input('Que nivel de experiencia busca?(junior,mid,senior): ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
-    pais = input('Ingrese el codigo del pais, si no desea un pais anote 0: ')
-    fecha_in= input('Escriba la fecha inicial (mas reciente): ')
-    fecha_fin=input('Escriba la fecha final (mas antigua): ')
-    if pais == '0':
-        pais = None
-    ofertas = controller.req_6(control,n,pais, exp, fecha_in,fecha_fin)
+    fecha= input('Escriba el anio') 
+
+    ofertas = controller.req_6(control,n, exp, fecha)
     cantidad_ciudades = ofertas[1]
     empresas = ofertas[2]
     total = ofertas[0]
-    promedio = ofertas[5]
     mayor = ofertas[3]
     menor = ofertas[4]
     print('El total de ciudades que cumplen el requisito son:',cantidad_ciudades)
     print('El total de empresas que cumplen el requisito son:',empresas)
     print('El total de ofertas que cumplen el requisito son:',total)
-    print('El promedio del salario ofertado es:',promedio)
     print('La ciudad con mayor cantidad de ofertas es:',mayor['city'],'con el total de ofertas:',mayor['count'])    
     print('La ciudad con menor cantidad de ofertas es:',menor['city'],'con el total de ofertas:',menor['count'])    
    
@@ -271,9 +266,10 @@ if __name__ == "__main__":
         elif int(inputs) == 4:
             tup = print_req_3(control)
             print('La cantidad de ofertas total con estos requerimientos es de:',tup[0])
-            print('La cantidad de ofertas "junior" es',tup[1])
-            print('La cantidad de ofertas "mid" es',tup[2])
-            print('La cantidad de ofertas "senior" es',tup[3])
+            print('La cantidad de ofertas "junior" es',tup[1]['value'])
+            print('La cantidad de ofertas "mid" es',tup[2]['value'])
+            print('La cantidad de ofertas "senior" es',tup[3]['value'])
+            
             
         elif int(inputs) == 5:
             print_req_4(control)
