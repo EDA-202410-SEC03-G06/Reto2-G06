@@ -70,7 +70,7 @@ def load_data(control):
     Carga los datos
     """
     #TODO: Realizar la carga de datos
-    return controller.load_data(control,size_archivo)
+    return controller.load_data(control, size_archivo)
     
     
 

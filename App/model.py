@@ -152,8 +152,8 @@ def data_size(data_structs):
     Retorna el tamaño de la lista de datos
     """
     #TODO: Crear la función para obtener el tamaño de una lista
-    
-    return mp.size(data_structs)
+    keyset = mp.keySet(data_structs)
+    return lt.size(keyset)
 
 
 def req_1(catalog, n, pais, expert):
