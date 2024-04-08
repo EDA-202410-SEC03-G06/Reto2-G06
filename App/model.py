@@ -496,7 +496,7 @@ def req_7(catalog, n, año, mes):
                 mp.put(ofertas_paises, pais_oferta, 1)
             else:
                 tupla_pais = mp.get(ofertas_paises, pais_oferta)
-                cantidad_pais = me.getValue(tupla_pais)
+                cantidad_pais = me.getValue(tupla_pais)+1
                 me.setValue(tupla_pais, cantidad_pais)
     
     paises_ordenados = lt.newList('ARRAY_LIST')
