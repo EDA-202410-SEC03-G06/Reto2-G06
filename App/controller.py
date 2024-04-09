@@ -162,13 +162,27 @@ def req_3(control,empresa,fecha_in,fecha_fin):
 • Número total de ofertas con experticia senior
     """
     # TODO: Modificar el requerimiento 3
+    memflag=True
     start_time = get_time()
    # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
-    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+    if memflag is True:
+        tracemalloc.start()
+    start_memory = get_memory()
 
+
+    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+    # calculando la diferencia en tiempo 
+    # finaliza el proceso para medir memoria
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    delta_memory = delta_memory(stop_memory, start_memory)
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    printLoadDataAnswer(delta_memory)
+    
+    
     size = model.data_size(lista)
     junior = model.mp.get(keys,'junior') 
     mid = model.mp.get(keys,'mid')
@@ -280,3 +294,13 @@ def delta_memory(stop_memory, start_memory):
     # de Byte -> kByte
     delta_memory = delta_memory/1024.0
     return delta_memory
+
+def printLoadDataAnswer(answer):
+    """
+    Imprime los datos de tiempo y memoria de la carga de datos
+    """
+    if isinstance(answer, (list, tuple)) is True:
+        print("Tiempo [ms]: ", f"{answer[0]:.3f}", "||",
+        "Memoria [kB]: ", f"{answer[1]:.3f}")
+    else:
+        print("Tiempo [ms]: ", f"{answer:.3f}")
