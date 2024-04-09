@@ -56,6 +56,8 @@ def load_data(control,size_archivo):
     elif size_archivo ==3:
         arc = "small"
     elif size_archivo == 4: 
+        arc= "50-por"
+    elif size_archivo == 5: 
         arc= "80-por"
     else: 
         arc = "large"
@@ -167,7 +169,7 @@ def req_3(control,empresa,fecha_in,fecha_fin):
    # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
     if memflag is True:
         tracemalloc.start()
-    start_memory = get_memory()
+        start_memory = get_memory()
 
 
     lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
@@ -176,11 +178,13 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     if memflag is True:
         stop_memory = get_memory()
         tracemalloc.stop()
-    delta_memory = delta_memory(stop_memory, start_memory)
-    end_time = get_time()
+    
+    end_time = get_time()   
+    Delta_memory = delta_memory(stop_memory, start_memory)
+  
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
-    printLoadDataAnswer(delta_memory)
+    print("Memoria [kB]: ",Delta_memory)
     
     
     size = model.data_size(lista)

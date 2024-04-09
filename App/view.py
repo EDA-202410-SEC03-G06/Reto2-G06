@@ -295,7 +295,7 @@ if __name__ == "__main__":
                 tipo = 'SINGLE_LINKED'
             
         elif int(inputs) == 11:
-            size_archivo = int(input('Escoga el Tamaño:\n1.10%\n2.20%\n3.small%\n4.80%\n5.100%\nOpcion: '))
+            size_archivo = int(input('Escoga el Tamaño:\n1.10%\n2.20%\n3.small%\n4.50%\n5.80%\n6.100%\nOpcion: '))
             
         elif int(inputs) == 0:
             working = False
