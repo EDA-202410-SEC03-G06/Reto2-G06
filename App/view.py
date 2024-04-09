@@ -132,10 +132,15 @@ def print_req_4(control):
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
+    mem = int(input('Quiere observar el uso de memoria?\n 1: Si\n 2: No'))
+    if mem == 1:
+        memflag = True
+    else:
+        memflag = False
     country = input("Escriba el codigo de país: ")
     f_inicio = input("La fecha inicial del periodo a consultar (con formato 'año-mes-dia'):")
     f_fin = input("La fecha final del periodo a consultar (con formato 'año-mes-dia'):")
-    total_ofertas, total_empresas, total_ciudades, ciudad_mayor, ciudad_menor, catalogo = controller.req_4(control, country, f_inicio, f_fin)
+    total_ofertas, total_empresas, total_ciudades, ciudad_mayor, ciudad_menor, catalogo = controller.req_4(control, country, f_inicio, f_fin, memflag)
     print(f"El total de ofertas es: {total_ofertas}")
     print(f"El total de empresas son: {total_empresas}")
     print(f"El total de ciudades son: {total_ciudades}")
@@ -185,10 +190,15 @@ def print_req_7(control):
         Función que imprime la solución del Requerimiento 7 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 7
+    mem = int(input('Quiere observar el uso de memoria?\n 1: Si\n 2: No'))
+    if mem == 1:
+        memflag = True
+    else:
+        memflag = False
     n= int(input("Ingrese la cantidad de paises para la consulta: "))
     año = input("Ingrese el año de consulta (ej. 2022): ")
     mes = input("Ingrese el mes de consulta (ej. 03): ")
-    total_ofertas, numero_ciudades, (pais_mayor, cuenta_pais_mayor), (ciudad_mayor, cuenta_ciudad_mayor), senior, mid, junior = controller.req_7(control, n, año, mes)
+    total_ofertas, numero_ciudades, (pais_mayor, cuenta_pais_mayor), (ciudad_mayor, cuenta_ciudad_mayor), senior, mid, junior = controller.req_7(control, n, año, mes, memflag)
     
     
     print(f"El total de ofertas de empleo es {total_ofertas}")

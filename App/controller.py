@@ -197,13 +197,21 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     
 
 
-def req_4(control, country, f_inicio, f_fin):
+def req_4(control, country, f_inicio, f_fin, memflag):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
     start_time = get_time()
+    if memflag is True:
+        tracemalloc.start()
+        start_memory = get_memory()
     ofertas = model.req_4(control['model'], country, f_inicio, f_fin)
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        deltaMemory = delta_memory(stop_memory, start_memory)
+        print('Memoria [kB]: ', deltaMemory)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")
@@ -242,13 +250,21 @@ def req_6(control,n,exp,fecha):
 
 
 
-def req_7(control, n, año, mes):
+def req_7(control, n, año, mes, memflag):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
     start_time = get_time()
+    if memflag is True:
+        tracemalloc.start()
+        start_memory = get_memory()
     ofertas = model.req_7(control['model'], n, año, mes)
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        deltaMemory = delta_memory(stop_memory, start_memory)
+        print('Memoria [kB]: ', deltaMemory)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")
