@@ -164,7 +164,7 @@ def req_3(control,empresa,fecha_in,fecha_fin):
 • Número total de ofertas con experticia senior
     """
     # TODO: Modificar el requerimiento 3
-    memflag=True
+    memflag=False
     start_time = get_time()
    # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
     if memflag is True:
@@ -180,11 +180,13 @@ def req_3(control,empresa,fecha_in,fecha_fin):
         tracemalloc.stop()
     
     end_time = get_time()   
-    Delta_memory = delta_memory(stop_memory, start_memory)
-  
+    
+    
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
-    print("Memoria [kB]: ",Delta_memory)
+    if memflag:
+        Delta_memory = delta_memory(stop_memory, start_memory)
+        print("Memoria [kB]: ",Delta_memory)
     
     
     size = model.data_size(lista)
