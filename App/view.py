@@ -116,8 +116,8 @@ def print_req_3(control):
     """
     # TODO: Imprimir el resultado del requerimiento 3
     empresa = input('Escriba el nombre de la empresa que desea')
-    fecha_in= input('Escriba la fecha inicial (mas reciente):')
-    fecha_fin=input('Escriba la fecha final (mas antigua):')
+    fecha_in= input('Escriba la fecha inicial (mas antigua):')
+    fecha_fin=input('Escriba la fecha final (mas reciente):')
     return  controller.req_3(control,empresa,fecha_in,fecha_fin)
     
 
@@ -277,7 +277,11 @@ if __name__ == "__main__":
             print('La cantidad de ofertas "junior" es',tup[1]['value'])
             print('La cantidad de ofertas "mid" es',tup[2]['value'])
             print('La cantidad de ofertas "senior" es',tup[3]['value'])
-            print(tup[4])
+            prnt = tup[4]['first']
+            for i in range(0,tup[0]):
+                info = prnt['info']
+                print(info)
+                prnt = prnt['next']
             
             
         elif int(inputs) == 5:
