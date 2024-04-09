@@ -388,7 +388,7 @@ def req_6(data_structs, n, experience, fecha):
     cant_empresas = 0
     sal_promedio = 0
     div_salario = 0
-#filtrar con pais
+#filtrar con exp
     if experience!='indiferente':
         for oferta in lt.iterator(catalog):
             
