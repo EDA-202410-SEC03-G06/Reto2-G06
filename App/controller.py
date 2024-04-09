@@ -129,33 +129,39 @@ def req_1(control,n,pais,exp):
     """
     Retorna el resultado del requerimiento 1
     """
-    # TODO: Modificar el requerimiento 1
     start_time = get_time()
     lista1 = model.req_1(control['model'],n,pais,exp)
-    llaves = model.mp.keySet(lista1[2])
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    llaves= model.mp.keySet(lista1[2])
     for oferta in model.lt.iterator(llaves):
-        parejas = model.mp.get(lista1[2], oferta)
-        valor = model.me.getValue(parejas)
-        print (llaves, valor)
+        pareja= model.mp.get(lista1[2], oferta)
+        valor= model.me.getValue(pareja)
+        print(llaves, valor)
+    
     return lista1
+    
+    
+    
 
 
-
-def req_2(control, n , empresa, ciudad):
+def req_2(control, n , empresa, city):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
     start_time = get_time()
-    lista = model.req_2(control['model'],n , empresa, ciudad)
+    lista = model.req_2(control['model'],n , empresa, city)
+    llaves= model.mp.keySet(lista[1])
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    for oferta in model.lt.iterator(llaves):
+        parejas= model.mp.get(lista, oferta)
+        valor= model.me.getValue(parejas)
+        print(llaves, valor)
     
-
     return lista 
 
 
@@ -168,7 +174,7 @@ def req_3(control,empresa,fecha_in,fecha_fin):
 • Número total de ofertas con experticia senior
     """
     # TODO: Modificar el requerimiento 3
-    memflag=False
+    memflag=True
     start_time = get_time()
    # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
     if memflag is True:
@@ -184,13 +190,11 @@ def req_3(control,empresa,fecha_in,fecha_fin):
         tracemalloc.stop()
     
     end_time = get_time()   
-    
-    
+    Delta_memory = delta_memory(stop_memory, start_memory)
+  
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
-    if memflag:
-        Delta_memory = delta_memory(stop_memory, start_memory)
-        print("Memoria [kB]: ",Delta_memory)
+    print("Memoria [kB]: ",Delta_memory)
     
     
     size = model.data_size(lista)
@@ -203,21 +207,13 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     
 
 
-def req_4(control, country, f_inicio, f_fin, memflag):
+def req_4(control, country, f_inicio, f_fin):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
     start_time = get_time()
-    if memflag is True:
-        tracemalloc.start()
-        start_memory = get_memory()
     ofertas = model.req_4(control['model'], country, f_inicio, f_fin)
-    if memflag is True:
-        stop_memory = get_memory()
-        tracemalloc.stop()
-        deltaMemory = delta_memory(stop_memory, start_memory)
-        print('Memoria [kB]: ', deltaMemory)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")
@@ -256,21 +252,13 @@ def req_6(control,n,exp,fecha):
 
 
 
-def req_7(control, n, año, mes, memflag):
+def req_7(control, n, año, mes):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
     start_time = get_time()
-    if memflag is True:
-        tracemalloc.start()
-        start_memory = get_memory()
     ofertas = model.req_7(control['model'], n, año, mes)
-    if memflag is True:
-        stop_memory = get_memory()
-        tracemalloc.stop()
-        deltaMemory = delta_memory(stop_memory, start_memory)
-        print('Memoria [kB]: ', deltaMemory)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")

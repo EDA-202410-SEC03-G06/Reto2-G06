@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
             tup = print_req_2(control)
             print('La cantidad de ofertas segun la ciudad y empresa que escogio: ',tup[0])
-            print(tup[1])
+            
       
             
 
