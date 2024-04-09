@@ -389,25 +389,42 @@ def req_6(data_structs, n, experience, fecha):
     sal_promedio = 0
     div_salario = 0
 #filtrar con pais
-  
-    for oferta in lt.iterator(catalog):
-         
-        if experience == oferta['experience_level']:
-            date = oferta['published_at']
-            fecha_oferta = datetime.strftime(date,'%Y')
-            if fecha_oferta==fecha:
-                 
-                    ispresent = mp.contains(city,oferta['city'])
-                    if ispresent==False:
-                        mp.put(city,oferta['city'],1)
-                        lt.addLast(ofertas,oferta)     
-                        
-                    if ispresent:
-                        pareja = mp.get(city,oferta['city'])
-                        valor = me.getValue(pareja)
-                        valor +=1
-                        me.setValue(pareja, valor)
+    if experience!='indiferente':
+        for oferta in lt.iterator(catalog):
+            
+            if experience == oferta['experience_level']:
+                date = oferta['published_at']
+                fecha_oferta = datetime.strftime(date,'%Y')
+                if fecha_oferta==fecha:
+                    
+                        ispresent = mp.contains(city,oferta['city'])
+                        if ispresent==False:
+                            mp.put(city,oferta['city'],1)
+                            lt.addLast(ofertas,oferta)     
                             
+                        if ispresent:
+                            pareja = mp.get(city,oferta['city'])
+                            valor = me.getValue(pareja)
+                            valor +=1
+                            me.setValue(pareja, valor)
+                            
+    elif experience=='indiferente':
+        for oferta in lt.iterator(catalog):
+                date = oferta['published_at']
+                fecha_oferta = datetime.strftime(date,'%Y')
+                if fecha_oferta==fecha:
+                    
+                        ispresent = mp.contains(city,oferta['city'])
+                        if ispresent==False:
+                            mp.put(city,oferta['city'],1)
+                            lt.addLast(ofertas,oferta)     
+                            
+                        if ispresent:
+                            pareja = mp.get(city,oferta['city'])
+                            valor = me.getValue(pareja)
+                            valor +=1
+                            me.setValue(pareja, valor)
+        
        
 # sort a ciudades
     city_keys = mp.keySet(city)

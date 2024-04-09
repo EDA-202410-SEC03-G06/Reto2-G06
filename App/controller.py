@@ -178,8 +178,6 @@ def req_3(control,empresa,fecha_in,fecha_fin):
         tracemalloc.stop()
     
     end_time = get_time()   
-    
-    
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
     if memflag:
@@ -224,18 +222,32 @@ def req_6(control,n,exp,fecha):
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
+    memflag=True
     start_time = get_time()
+    if memflag is True:
+        tracemalloc.start()
+        start_memory = get_memory()
+
     #ofertas = model.req_6(control['model'],n,exp,fecha)
     total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],40,'mid','2022')
-    end_time = get_time()
+    # calculando la diferencia en tiempo 
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    
+    end_time = get_time()   
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    if memflag:
+        Delta_memory = delta_memory(stop_memory, start_memory)
+        print("Memoria [kB]: ",Delta_memory)
+    
     llaves = model.mp.valueSet(lista_c)
     for ciudad in model.lt.iterator(llaves):
         llave = model.mp.valueSet(ciudad)
         for element in model.lt.iterator(llave):
-            print(element)
-            
+            #print(element)
+            pass
 
     return total_ofertas, cant_ciudades, cant_empresas, mayor, menor
 
