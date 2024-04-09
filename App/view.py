@@ -261,7 +261,7 @@ if __name__ == "__main__":
             tup = print_req_1(control)
             print('La cantidad de ofertas en el pais que escogio: ',tup[0])
             print('La cantidad de ofertas según la condición escogida', tup[1])
-            print(tup[2])
+            
             
         elif int(inputs) == 3:
 

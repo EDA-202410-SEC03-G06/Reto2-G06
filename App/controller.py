@@ -132,9 +132,14 @@ def req_1(control,n,pais,exp):
     # TODO: Modificar el requerimiento 1
     start_time = get_time()
     lista1 = model.req_1(control['model'],n,pais,exp)
+    llaves = model.mp.keySet(lista1[2])
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    for oferta in model.lt.iterator(llaves):
+        parejas = model.mp.get(lista1[2], oferta)
+        valor = model.me.getValue(parejas)
+        print (llaves, valor)
     return lista1
 
 
