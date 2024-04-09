@@ -93,11 +93,7 @@ def print_req_1(control):
     exp = input('Que nivel de experiencia busca?(junior,mid,senior): ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
     tup = controller.req_1(control, n, pais, exp)
-    catalog = tup[1]
-    ofertas = catalog['elements']
     
-   # print(tabulate(ofertas, headers='keys'))
-    #print(ofertas)
     return tup
 
 
@@ -110,8 +106,7 @@ def print_req_2(control):
     empresa = input('Ingrese el nombre de la empresa: ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))    
     tup = controller.req_2(control, n , empresa, city)
-    catalog = tup[1]
-    ofertas = catalog['elements']
+    
     return tup
 
 
@@ -272,6 +267,7 @@ if __name__ == "__main__":
 
             tup = print_req_2(control)
             print('La cantidad de ofertas segun la ciudad y empresa que escogio: ',tup[0])
+            print(tup[1])
       
             
 
