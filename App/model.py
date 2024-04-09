@@ -411,6 +411,8 @@ def req_6(data_structs, n, experience, fecha):
                             valor = me.getValue(pareja)
                             valor +=1
                             me.setValue(pareja, valor)
+                            lt.addLast(ofertas,oferta)     
+
                             
     elif experience=='indiferente':
         for oferta in lt.iterator(catalog):
@@ -428,7 +430,8 @@ def req_6(data_structs, n, experience, fecha):
                             valor = me.getValue(pareja)
                             valor +=1
                             me.setValue(pareja, valor)
-        
+                            lt.addLast(ofertas,oferta)     
+
        
 # sort a ciudades
     city_keys = mp.keySet(city)
@@ -520,9 +523,9 @@ def req_6(data_structs, n, experience, fecha):
         mp.put(info,'total',total)
         mp.put(info,'company_num',num_empresas)
         pp = mp.get(data_structs['jobs'],peor_id)
-        mp.put(info,'salary_from',pp)
+        mp.put(info,'info_peor',pp)
         pm = mp.get(data_structs['jobs'],mejor_id)
-        mp.put(info,'salary_from',pm)
+        mp.put(info,'info_mejor',pm)
         mp.put(lista_c,ciudad,info)
     return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c)                                 
     
