@@ -70,7 +70,7 @@ def load_data(control):
     Carga los datos
     """
     #TODO: Realizar la carga de datos
-    return controller.load_data(control,size_archivo)
+    return controller.load_data(control, size_archivo)
     
     
 
@@ -142,7 +142,8 @@ def print_req_4(control):
     print(f"La ciudad con mayor numero de ofertas es {ciudad_mayor[0]} con un total de {ciudad_mayor[1]}")
     print(f"La ciudad con menor numero de ofertas es {ciudad_menor[0]} con un total de {ciudad_menor[1]}")
     
-    print(tabulate(catalogo['elements']))
+    
+    print(tabulate(catalogo['elements'][:5]))
 
 def print_req_5(control):
     """
@@ -162,22 +163,17 @@ def print_req_6(control):
     # TODO: Imprimir el resultado del requerimiento 6
     exp = input('Que nivel de experiencia busca?(junior,mid,senior): ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
-    pais = input('Ingrese el codigo del pais, si no desea un pais anote 0: ')
-    fecha_in= input('Escriba la fecha inicial (mas reciente): ')
-    fecha_fin=input('Escriba la fecha final (mas antigua): ')
-    if pais == '0':
-        pais = None
-    ofertas = controller.req_6(control,n,pais, exp, fecha_in,fecha_fin)
+    fecha= input('Escriba el anio') 
+
+    ofertas = controller.req_6(control,n, exp, fecha)
     cantidad_ciudades = ofertas[1]
     empresas = ofertas[2]
     total = ofertas[0]
-    promedio = ofertas[5]
     mayor = ofertas[3]
     menor = ofertas[4]
     print('El total de ciudades que cumplen el requisito son:',cantidad_ciudades)
     print('El total de empresas que cumplen el requisito son:',empresas)
     print('El total de ofertas que cumplen el requisito son:',total)
-    print('El promedio del salario ofertado es:',promedio)
     print('La ciudad con mayor cantidad de ofertas es:',mayor['city'],'con el total de ofertas:',mayor['count'])    
     print('La ciudad con menor cantidad de ofertas es:',menor['city'],'con el total de ofertas:',menor['count'])    
    
@@ -190,9 +186,9 @@ def print_req_7(control):
     """
     # TODO: Imprimir el resultado del requerimiento 7
     n= int(input("Ingrese la cantidad de paises para la consulta: "))
-    fecha_in= input("Ingrese la fecha inicial (más antigua): ")
-    fecha_fin= input("Ingrese la fecha final (más reciente): ")
-    total_ofertas, numero_ciudades, (pais_mayor, cuenta_pais_mayor), (ciudad_mayor, cuenta_ciudad_mayor), senior, mid, junior = controller.req_7(control, n, fecha_in, fecha_fin )
+    año = input("Ingrese el año de consulta (ej. 2022): ")
+    mes = input("Ingrese el mes de consulta (ej. 03): ")
+    total_ofertas, numero_ciudades, (pais_mayor, cuenta_pais_mayor), (ciudad_mayor, cuenta_ciudad_mayor), senior, mid, junior = controller.req_7(control, n, año, mes)
     
     
     print(f"El total de ofertas de empleo es {total_ofertas}")
@@ -272,9 +268,11 @@ if __name__ == "__main__":
         elif int(inputs) == 4:
             tup = print_req_3(control)
             print('La cantidad de ofertas total con estos requerimientos es de:',tup[0])
-            print('La cantidad de ofertas "junior" es',tup[1])
-            print('La cantidad de ofertas "mid" es',tup[2])
-            print('La cantidad de ofertas "senior" es',tup[3])
+            print('La cantidad de ofertas "junior" es',tup[1]['value'])
+            print('La cantidad de ofertas "mid" es',tup[2]['value'])
+            print('La cantidad de ofertas "senior" es',tup[3]['value'])
+            print(tup[4])
+            
             
         elif int(inputs) == 5:
             print_req_4(control)
@@ -299,7 +297,7 @@ if __name__ == "__main__":
                 tipo = 'SINGLE_LINKED'
             
         elif int(inputs) == 11:
-            size_archivo = int(input('Escoga el Tamaño:\n1.10%\n2.20%\n3.small%\n4.80%\n5.100%\nOpcion: '))
+            size_archivo = int(input('Escoga el Tamaño:\n1.10%\n2.20%\n3.small%\n4.50%\n5.80%\n6.100%\nOpcion: '))
             
         elif int(inputs) == 0:
             working = False

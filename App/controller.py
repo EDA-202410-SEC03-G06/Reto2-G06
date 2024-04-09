@@ -56,6 +56,8 @@ def load_data(control,size_archivo):
     elif size_archivo ==3:
         arc = "small"
     elif size_archivo == 4: 
+        arc= "50-por"
+    elif size_archivo == 5: 
         arc= "80-por"
     else: 
         arc = "large"
@@ -79,8 +81,7 @@ def load_jobs(catalog,arc):
     booksfile = cf.data_dir + str(arc+"-jobs.csv")
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for job in input_file:
-        model.add_jobs(catalog,job)
-        
+        model.add_jobs(catalog,job)  
     
     #model.sort(catalog)
     return model.data_size(catalog['jobs'])
@@ -92,6 +93,7 @@ def load_locations(catalog,arc):
     input_file = csv.DictReader(open(booksfile, encoding="utf-8"),delimiter=";")
     for multilocation in input_file:
         model.add_locations(catalog, multilocation)
+
     return model.data_size(catalog['multi-locations'])
 
 def load_employment_type(catalog,arc):
@@ -160,24 +162,36 @@ def req_3(control,empresa,fecha_in,fecha_fin):
 • Número total de ofertas con experticia senior
     """
     # TODO: Modificar el requerimiento 3
+    memflag=True
     start_time = get_time()
-    lista = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
-    end_time = get_time()
+   # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+    if memflag is True:
+        tracemalloc.start()
+        start_memory = get_memory()
+
+
+    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+    # calculando la diferencia en tiempo 
+    # finaliza el proceso para medir memoria
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    
+    end_time = get_time()   
+    Delta_memory = delta_memory(stop_memory, start_memory)
+  
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    print("Memoria [kB]: ",Delta_memory)
+    
+    
     size = model.data_size(lista)
-    junior = 0
-    mid = 0
-    senior = 0 
-    for oferta in model.lt.iterator(lista):
-        if oferta['experience_level']=='junior':
-            junior +=1
-        elif oferta['experience_level']=='mid':
-            mid +=1
-        elif oferta['experience_level']=='senior':
-            senior +=1
+    junior = model.mp.get(keys,'junior') 
+    mid = model.mp.get(keys,'mid')
+    senior= model.mp.get(keys,'senior')
+    lista_1 =model.mp.valueSet(lista)
         
-    return size, junior, mid, senior
+    return size, junior, mid, senior, lista_1
     
 
 
@@ -203,29 +217,36 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     
     return prueba
 
-def req_6(control,n,pais,exp,fecha_in,fecha_fin):
+def req_6(control,n,exp,fecha):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
     start_time = get_time()
-    ofertas = model.req_6(control['model'],n,pais,exp,fecha_in,fecha_fin)
+    #ofertas = model.req_6(control['model'],n,exp,fecha)
+    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],40,'mid','2022')
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    llaves = model.mp.valueSet(lista_c)
+    for ciudad in model.lt.iterator(llaves):
+        llave = model.mp.valueSet(ciudad)
+        for element in model.lt.iterator(llave):
+            print(element)
+            
 
-    return ofertas
+    return total_ofertas, cant_ciudades, cant_empresas, mayor, menor
 
 
 
 
-def req_7(control, n, f_inicio, f_fin):
+def req_7(control, n, año, mes):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
     start_time = get_time()
-    ofertas = model.req_7(control['model'], n, f_inicio, f_fin)
+    ofertas = model.req_7(control['model'], n, año, mes)
     end_time = get_time()
     deltaTime =delta_time(start_time,end_time)
     print(deltaTime, "[ms]")
@@ -275,3 +296,13 @@ def delta_memory(stop_memory, start_memory):
     # de Byte -> kByte
     delta_memory = delta_memory/1024.0
     return delta_memory
+
+def printLoadDataAnswer(answer):
+    """
+    Imprime los datos de tiempo y memoria de la carga de datos
+    """
+    if isinstance(answer, (list, tuple)) is True:
+        print("Tiempo [ms]: ", f"{answer[0]:.3f}", "||",
+        "Memoria [kB]: ", f"{answer[1]:.3f}")
+    else:
+        print("Tiempo [ms]: ", f"{answer:.3f}")

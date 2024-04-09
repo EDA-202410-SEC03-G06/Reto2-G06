@@ -25,7 +25,7 @@
  """
 
 
-import datetime as datetime
+from datetime import datetime as datetime
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import stack as st
@@ -108,7 +108,7 @@ def add_skills(catalog, skills):
 def add_jobs(catalog, job):
     
     date = job['published_at']
-    job['published_at'] = datetime.datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
+    job['published_at'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S.%fZ')
     mp.put(catalog['jobs'],job['id'],job)
     
 def add_locations(catalog, location):
@@ -152,9 +152,8 @@ def data_size(data_structs):
     Retorna el tamaño de la lista de datos
     """
     #TODO: Crear la función para obtener el tamaño de una lista
-    
-    return mp.size(data_structs)
-
+    keyset = mp.keySet(data_structs)
+    return lt.size(keyset)
 
 def req_1(catalog, n, pais, expert):
     """
@@ -219,30 +218,41 @@ def req_3(catalog, empresa, fecha_in, fecha_fin):
     Función que soluciona el requerimiento 3
     """
     # TODO: Realizar el requerimiento 3
-    ofertas = catalog['jobs']
+    ofertas = mp.valueSet(catalog['jobs'])
     final  = lt.newList('ARRAY_LIST')
-   
+    fecha_in = datetime.strptime(fecha_in,'%Y-%m-%d')
+    fecha_fin = datetime.strptime(fecha_fin,'%Y-%m-%d')
 
     for oferta in lt.iterator(ofertas):
         if empresa == oferta['company_name']:
-            date = oferta['published_at']
-            fecha = datetime.strftime(date,'%Y-%m-%d')
+            fecha_oferta = oferta['published_at']
+            fecha_string = datetime.strftime(fecha_oferta,'%Y-%m-%d')
+            fecha = datetime.strptime(fecha_string,'%Y-%m-%d')
             if fecha<=fecha_fin and fecha>=fecha_in:
                 lt.addLast(final,oferta)
-            elif fecha<fecha_in:
-                break
-            
-    filtro_2 = lt.newList('ARRAY_LIST')
+    
+    filtro_2 = mp.newMap()
+    keys = mp.newMap()
+    junior = 0
+    mid = 0
+    senior = 0
     for o in lt.iterator(final):
         datos = {'published_at':o['published_at'],'title':o['title'],'experience_level':o['experience_level'],
                  'city':o['city'],'country_code':o['country_code'],'company_size':o['company_size'], 
                  'workplace_type':o['workplace_type'],'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        lt.addLast(filtro_2,datos)    
-    
-    ins.sort(filtro_2, sort_criteria_req3)
-    print(filtro_2)
+        mp.put(filtro_2,o['id'], datos)
+        if o['experience_level']=='junior':
+            junior +=1
+        elif o['experience_level']=='mid':
+            mid +=1
+        elif o['experience_level']=='senior':
+            senior +=1
             
-    return filtro_2
+    mp.put(keys,'junior',junior)
+    mp.put(keys,'mid',mid)
+    mp.put(keys,'senior',senior)
+
+    return filtro_2, keys
 
 
 def req_4(catalog, pais, f_inicio, f_fin):
@@ -252,11 +262,21 @@ def req_4(catalog, pais, f_inicio, f_fin):
     # TODO: Realizar el requerimiento 4
     ofertas = catalog['jobs']
     ofertas_rango = lt.newList('ARRAY_LIST')
-    empresas = lt.newList('ARRAY_LIST')
+    empresas = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
     f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d')
     f_fin = datetime.strptime(f_fin,'%Y-%m-%d')
-    ciudades = {}
-    for oferta in lt.iterator(ofertas):
+    ciudades = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    ofertas_lista = mp.valueSet(ofertas)
+    
+    for oferta in lt.iterator(ofertas_lista):
         if pais == oferta['country_code']:
             empresa = oferta["company_name"]
             
@@ -264,6 +284,7 @@ def req_4(catalog, pais, f_inicio, f_fin):
             fecha_string = datetime.strftime(fecha_oferta,'%Y-%m-%d')
             fecha = datetime.strptime(fecha_string,'%Y-%m-%d')
             if (f_inicio <= fecha) and (fecha <= f_fin):
+                ciudad = oferta['city']
                 remote = oferta['workplace_type']
                 if 'remote' in remote:
                     oferta['remote'] = remote
@@ -272,16 +293,25 @@ def req_4(catalog, pais, f_inicio, f_fin):
                 lt.addLast(ofertas_rango, oferta)
                 empresa = oferta["company_name"]
 
-                if lt.isPresent(empresas, empresa) == 0:
-                    lt.addLast(empresas, empresa)
+                if mp.contains(empresas, empresa) == False:
+                    mp.put(empresas, empresa, True)
                 
-                if oferta['city'] not in ciudades:
-                    ciudades[oferta['city']] = 1
+                if mp.contains(ciudades, ciudad) == False:
+                    mp.put(ciudades, ciudad, 1)
                 else:
-                    ciudades[oferta['city']] +=1
+                    tupla_city = mp.get(ciudades, oferta['city'])
+                    cantidad_ciudad = me.getValue(tupla_city)
+                    cantidad_ciudad +=1
+                    me.setValue(tupla_city, cantidad_ciudad)
+                    
+                    
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
-    for city in ciudades.keys():
-        lt.addLast(ciudades_ordenadas, {'ciudad': city,'count': ciudades[city]})
+    ciudades_lista = mp.keySet(ciudades)
+    for city in lt.iterator(ciudades_lista):
+        tupla = mp.get(ciudades, city)
+        valor = me.getValue(tupla)
+        city_name = me.getKey(tupla)
+        lt.addLast(ciudades_ordenadas, {'ciudad': city_name,'count': valor})
     merg.sort(ciudades_ordenadas, sort_criteria_req6y7)
     mayor = lt.firstElement(ciudades_ordenadas)
     ciudad_mayor = mayor["ciudad"]
@@ -289,14 +319,14 @@ def req_4(catalog, pais, f_inicio, f_fin):
     menor = lt.lastElement(ciudades_ordenadas)
     ciudad_menor = menor['ciudad']
     cuenta_ciudad_menor = menor['count']
-    
+    empresas_size = mp.keySet(empresas)
     ofertas_rango_criterios = lt.newList('ARRAY_LIST')
     for oferta in lt.iterator(ofertas_rango):
         datos = {'published_at': oferta['published_at'],'title':oferta['title'], 'experience_level': oferta['experience_level'],'company_name': oferta['company_name'],
                  'city': oferta['city'], 'workplace_type': oferta['workplace_type'],'remote': oferta['remote'],'open_to_hire_ukrainians': oferta['open_to_hire_ukrainians']}
         lt.addLast(ofertas_rango_criterios, datos)  
                
-    return lt.size(ofertas_rango), lt.size(empresas), lt.size(ciudades_ordenadas), (ciudad_mayor, cuenta_ciudad_mayor),(ciudad_menor,cuenta_ciudad_menor), ofertas_rango_criterios
+    return lt.size(ofertas_rango), lt.size(empresas_size), lt.size(ciudades_ordenadas), (ciudad_mayor, cuenta_ciudad_mayor),(ciudad_menor,cuenta_ciudad_menor), ofertas_rango_criterios
     
 
 
@@ -343,58 +373,48 @@ def req_5(catalog, city, fecha_in, fecha_fin):
     return (cantidad_ofertas, cant_empresas, mayor, menor, ultima_respuesta)
 
 
-def req_6(data_structs, n, pais, experience, fecha_in, fecha_fin):
+def req_6(data_structs, n, experience, fecha):
     """
     Función que soluciona el requerimiento 6
     """
     # TODO: Realizar el requerimiento 
-    catalog = data_structs['jobs']
-    emptypes = data_structs['employment-types']
+    catalog = mp.valueSet(data_structs['jobs'])
+    #emptypes = mp.valueSet(data_structs['employment-types'])
     ciudades = lt.newList('ARRAY_LIST')
     ofertas = lt.newList('ARRAY_LIST')
     empresas = lt.newList('ARRAY_LIST')
     id_list = lt.newList('ARRAY_LIST')
-    city = {}
+    city = mp.newMap()
     cant_empresas = 0
     sal_promedio = 0
     div_salario = 0
 #filtrar con pais
-    if pais != None: 
-        for oferta in lt.iterator(catalog):
+  
+    for oferta in lt.iterator(catalog):
          
-            if pais == oferta['country_code'] and experience == oferta['experience_level']:
-                date = oferta['published_at']
-                fecha = datetime.strftime(date,'%Y-%m-%d')
-                if fecha<=fecha_fin and fecha>=fecha_in:
-                 
-                    if oferta['city'] not in city:
-                        city[oferta['city']] = 1
-                        lt.addLast(ofertas,oferta)     
-                        
-                    elif oferta['city']  in city:
-                        lt.addLast(ofertas,oferta)
-                        city[oferta['city']] += 1
-
-#filtrar sin pais        
-    else:
-        for oferta in lt.iterator(catalog):
+        if experience == oferta['experience_level']:
             date = oferta['published_at']
-            fecha = datetime.strftime(date,'%Y-%m-%d')
-            if  experience == oferta['experience_level'] and fecha<=fecha_fin and fecha>=fecha_in:
-                    
-                    if oferta['city'] not in city:
-                        city[oferta['city']] = 1
+            fecha_oferta = datetime.strftime(date,'%Y')
+            if fecha_oferta==fecha:
+                 
+                    ispresent = mp.contains(city,oferta['city'])
+                    if ispresent==False:
+                        mp.put(city,oferta['city'],1)
                         lt.addLast(ofertas,oferta)     
                         
-                    elif oferta['city']  in city:
-                        lt.addLast(ofertas,oferta)
-                        city[oferta['city']] += 1
-    
-      
+                    if ispresent:
+                        pareja = mp.get(city,oferta['city'])
+                        valor = me.getValue(pareja)
+                        valor +=1
+                        me.setValue(pareja, valor)
+                            
        
 # sort a ciudades
-    for ciudad in city.keys():
-        lt.addLast(ciudades,{'city':ciudad,'count':city[ciudad]})     
+    city_keys = mp.keySet(city)
+    for ciudad in lt.iterator(city_keys):
+        pareja = mp.get(city,ciudad)
+        count = me.getValue(pareja)
+        lt.addLast(ciudades,{'city':ciudad,'count':count})     
            
     merg.sort(ciudades,sort_criteria_req6y7)
     lista_de_n_cities = lt.newList('ARRAY_LIST')
@@ -409,47 +429,87 @@ def req_6(data_structs, n, pais, experience, fecha_in, fecha_fin):
     menor = lt.lastElement(sub)
     
 #lista filtrada con las ciudades
-    filtro = lt.newList('ARRAY_LIST')
+    filtro = mp.newMap()
+    total_ofertas = 0
     for oferta in lt.iterator(ofertas):
         present = lt.isPresent(lista_de_n_cities,oferta['city'])
         if present>0:
-            lt.addLast(filtro,oferta)
-    total_ofertas = lt.size(filtro)
+            if (mp.contains(filtro,oferta['city']))==True:
+                pareja = mp.get(filtro,oferta['city'])
+                mapa = me.getValue(pareja)
+                mp.put(mapa,oferta['id'],oferta)
+            if (mp.contains(filtro,oferta['city']))==False:
+                new_map = mp.newMap()
+                mp.put(new_map,oferta['id'],oferta)
+                mp.put(filtro,oferta['city'],new_map)
+                
+            total_ofertas+=1
+            present_empresa = lt.isPresent(empresas,oferta['company_name'])
+            if present_empresa==0:
+                lt.addLast(empresas,oferta['company_name']) 
+                cant_empresas +=1
+            
+    
 
 #contar empresas y sacar id  
-    for oferta in lt.iterator(filtro):
-        present_empresa = lt.isPresent(empresas,oferta['company_name'])
-        if present_empresa==0:
-            lt.addLast(empresas,oferta['company_name']) 
-            cant_empresas +=1
-        lt.addLast(id_list,oferta['id'])
-          
-    
-    #promedio salario
-    id_set = set(id_list['elements'])
-    if pais!=None:
-        for oferta in lt.iterator(emptypes):
-            #present_id = lt.isPresent(id_set,oferta['id'])
-            if oferta['id'] in id_set and oferta['salary_from']!='':
-                sal_promedio+= int(oferta['salary_from'])
+ 
+#lista de ciudades
+    lista_c = mp.newMap()
+    for ciudad in lt.iterator(lista_de_n_cities):  
+        pareja_dict = mp.get(filtro,ciudad)  
+        valores = me.getValue(pareja_dict)
+        values = mp.valueSet(valores)
+        div_salario = 1
+        num_empresas = 0
+        total = 0
+        mejor = 0
+        mejor_id =''
+        peor = 999999
+        peor_id =''
+        pais = ''
+        empresas_ciudad = lt.newList('ARRAY_LIST')
+        for oferta in lt.iterator(values):
+            #contar empresas en total
+
+            #contar empresas por ciudad
+            ciudad_present = lt.isPresent(empresas_ciudad,oferta['company_name'])
+            if ciudad_present==0:
+                lt.addLast(empresas_ciudad,oferta['company_name']) 
+                num_empresas +=1
+            #contar promedio
+            pareja = mp.get(data_structs['employment-types'],oferta['id'])
+            emp= me.getValue(pareja)
+            if emp['salary_from']!='':
+                sal_promedio+= ( ( int(emp['salary_from'])+ int(emp['salary_to'])) )/2
                 div_salario +=1
+                if int(emp['salary_from'])<peor:
+                    peor = int(emp['salary_from'])
+                    peor_id = emp['id']
+                if int(emp['salary_from'])>mejor:
+                    mejor = int(emp['salary_to'])
+                    mejor_id = emp['id']
 
-    promedio = sal_promedio//div_salario
-
+            total +=1
+            pais = oferta['country_code']
+            
+        info = mp.newMap()    
+        mp.put(info,'city',ciudad)
+        mp.put(info,'country',pais)
+        mp.put(info,'promedio',(sal_promedio/div_salario))
+        mp.put(info,'total',total)
+        mp.put(info,'company_num',num_empresas)
+        pp = mp.get(data_structs['jobs'],peor_id)
+        mp.put(info,'salary_from',pp)
+        pm = mp.get(data_structs['jobs'],mejor_id)
+        mp.put(info,'salary_from',pm)
+        mp.put(lista_c,ciudad,info)
+    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c)                                 
     
-    
-    #devolver catalogo ciudades
-    catalogo_ciudades = lt.newList('ARRAY_LIST')
-    #for ciudad in lt.iterator(sub):
-    #    lt.addLast(catalogo_ciudades,{'city':ciudad['city'],'ofertas':ciudad['count']})
-        
-    return (total_ofertas, cant_ciudades, cant_empresas, mayor, menor, promedio)                                 
-    
 
 
 
 
-def req_7(catalog, n, f_inicial, f_final):
+def req_7(catalog, n, año, mes):
     """
     Función que soluciona el requerimiento 7
     """
@@ -457,62 +517,132 @@ def req_7(catalog, n, f_inicial, f_final):
     ofertas_jobs = catalog['jobs']
     ofertas_skills = catalog['skills']
     
+    string_fecha = str(año+'-'+mes)
+    
 
-    f_inicio = datetime.strptime(f_inicial,'%Y-%m-%d')
-    f_fin = datetime.strptime(f_final,'%Y-%m-%d')
-
-    ofertas_rango = lt.newList('ARRAY_LIST')
-    ofertas_paises = {}
-    for oferta in lt.iterator(ofertas_jobs):
+    ofertas_rango = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    ofertas_paises = mp.newMap(100,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    ofertas_jobs_id = mp.keySet(ofertas_jobs)
+    
+    for oferta_id in lt.iterator(ofertas_jobs_id):
+        pareja_oferta = mp.get(ofertas_jobs, oferta_id)
+        oferta = me.getValue(pareja_oferta)
+        
         fecha_oferta = oferta['published_at']
-        fecha_string = datetime.strftime(fecha_oferta,'%Y-%m-%d')
-        fecha = datetime.strptime(fecha_string,'%Y-%m-%d')
-        if (( fecha >= f_inicio) and (fecha <= f_fin)):
-            lt.addLast(ofertas_rango, oferta)
+        fecha_string = datetime.strftime(fecha_oferta,'%Y-%m')
+        
+        if fecha_string == string_fecha:
+            mp.put(ofertas_rango, oferta_id, oferta)
             pais_oferta = oferta['country_code']
-            if pais_oferta not in ofertas_paises:
-               ofertas_paises[pais_oferta] = 1
+            if mp.contains(ofertas_paises, pais_oferta) == False:
+                mp.put(ofertas_paises, pais_oferta, 1)
             else:
-                ofertas_paises[pais_oferta] += 1
-    paises_organizados = lt.newList('ARRAY_LIST')  
-    for pais in ofertas_paises.keys():
-        lt.addLast(paises_organizados, {'pais': pais,'count': ofertas_paises[pais]})
-    merg.sort(paises_organizados, sort_criteria_req6y7)
-    top_n = lt.newList('ARRAY_LIST')
-    i= 1
-    while lt.size(top_n) < n:
-        element = lt.getElement(paises_organizados, i)
-        lt.addLast(top_n, element['pais'])
-        i+=1
+                tupla_pais = mp.get(ofertas_paises, pais_oferta)
+                cantidad_pais = me.getValue(tupla_pais)+1
+                me.setValue(tupla_pais, cantidad_pais)
     
-    pais_mayor = lt.firstElement(top_n)
-    cuenta_pais_mayor = ofertas_paises[pais_mayor]
+    paises_ordenados = lt.newList('ARRAY_LIST')
+    paises_lista = mp.keySet(ofertas_paises)
+    for country in lt.iterator(paises_lista):
+        tupla_pais = mp.get(ofertas_paises, country)
+        valor_pais = me.getValue(tupla_pais)
+        country_name = me.getKey(tupla_pais)
+        lt.addLast(paises_ordenados, {'pais': country_name,'count': valor_pais})
+    merg.sort(paises_ordenados, sort_criteria_req6y7)
     
-    ciudades = {}
+    info_pais_mayor = lt.firstElement(paises_ordenados)
+    pais_mayor =  info_pais_mayor['pais']
+    cuenta_pais_mayor = info_pais_mayor['count']
     
-    ofertas_n_paises = lt.newList()
-    for oferta in lt.iterator(ofertas_rango):
-        if lt.isPresent(top_n, oferta['country_code']) != 0:
-            lt.addLast(ofertas_n_paises, oferta)
+    ciudades = mp.newMap(500,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    
+    ofertas_n_paises = mp.newMap(5000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    top_n = mp.newMap(n,
+            maptype='CHAINING',
+            loadfactor=4,
+            cmpfunction=compareMapBookIds
+            )
+    cuenta_top_n = 0
+    for country in lt.iterator(paises_ordenados):
+        if cuenta_top_n < n:
+            pais = country['pais']
+            cuenta = country['count']
+            mp.put(top_n, pais, cuenta)
             
-            if oferta['city'] not in ciudades.keys():
-                ciudades[oferta['city']] = 1
-            else:
-                ciudades[oferta['city']] +=1
-    total_ofertas = lt.size(ofertas_n_paises)
-# Criterios para retornar en ciudades
+        else:
+            break
+        cuenta_top_n+=1
+    total_ofertas = 0
+    ofertas_rango_id = mp.keySet(ofertas_rango)
+    for oferta_id in lt.iterator(ofertas_rango_id):
+        pareja_oferta = mp.get(ofertas_jobs, oferta_id)
+        oferta = me.getValue(pareja_oferta)
+        
+        pais_oferta = oferta['country_code']
+        if mp.contains(top_n, pais_oferta) == True:
+            mp.put(ofertas_n_paises, oferta_id, oferta)
+            total_ofertas +=1
+    
+    ofertas_n_paises_keys = mp.keySet(ofertas_n_paises)
+    for id in lt.iterator(ofertas_n_paises_keys):
+        pareja_oferta_pais = mp.get(ofertas_n_paises, id)
+        oferta = me.getValue(pareja_oferta_pais)
+        ciudad = oferta['city']
+        
+        if mp.contains(ciudades, ciudad) == False:
+            mp.put(ciudades, ciudad, 1)
+        else:
+            tupla_city = mp.get(ciudades, oferta['city'])
+            cantidad_ciudad = me.getValue(tupla_city)
+            cantidad_ciudad +=1
+            me.setValue(tupla_city, cantidad_ciudad)
+                    
+                    
     ciudades_ordenadas = lt.newList('ARRAY_LIST')
-    for city in ciudades.keys():
-        lt.addLast(ciudades_ordenadas, {'ciudad': city,'count': ciudades[city]})
+    ciudades_lista = mp.keySet(ciudades)
+    for city in lt.iterator(ciudades_lista):
+        tupla = mp.get(ciudades, city)
+        valor = me.getValue(tupla)
+        city_name = me.getKey(tupla)
+        lt.addLast(ciudades_ordenadas, {'ciudad': city_name,'count': valor})
     merg.sort(ciudades_ordenadas, sort_criteria_req6y7)
-    numero_ciudades = lt.size(ciudades_ordenadas)
-    ciudad_mayor_datos= lt.firstElement(ciudades_ordenadas)
-    ciudad_mayor = ciudad_mayor_datos['ciudad']
-    cuenta_ciudad_mayor = ciudad_mayor_datos['count']
+    
+    numero_ciudades = lt.size(ciudades_lista)
+    mayor = lt.firstElement(ciudades_ordenadas)
+    ciudad_mayor = mayor["ciudad"]
+    cuenta_ciudad_mayor = mayor['count']
 #Encontrar los skills y organizarlos
-    skills_junior = {}
-    skills_mid = {}
-    skills_senior = {}
+    skills_junior = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    skills_mid = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    skills_senior = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
     
     suma_nivel_junior = 0
     suma_nivel_mid = 0
@@ -522,64 +652,94 @@ def req_7(catalog, n, f_inicial, f_final):
     total_ofertas_mid = 0
     total_ofertas_senior = 0
     
-    empresas_junior = {}
-    empresas_mid = {}
-    empresas_senior = {}
-    
-    skills_id = lt.newList('ARRAY_LIST')
-    for skills in lt.iterator(ofertas_skills):
-        lt.addLast(skills_id, skills['id'])
+    empresas_junior = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    empresas_mid = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    empresas_senior = mp.newMap(1000,
+                         maptype='CHAINING',
+                         loadfactor=4,
+                         cmpfunction=compareMapBookIds
+                         )
+    ofertas_n_paises_id = mp.keySet(ofertas_n_paises)
+    for oferta_id in lt.iterator(ofertas_n_paises_id):
+        pareja_skill = mp.get(ofertas_skills, oferta_id)
+        skill = me.getValue(pareja_skill)
+        oferta_pareja = mp.get(ofertas_jobs, oferta_id)
+        oferta = me.getValue(oferta_pareja)
         
-    
-    for oferta in lt.iterator(ofertas_n_paises):
-        id_oferta = oferta['id']
-        position = lt.isPresent(skills_id, id_oferta)
-        elemento = lt.getElement(ofertas_skills, position)
-
         experiencia = oferta['experience_level']
-        empresa = oferta['company_name']
+        
         
         if experiencia == 'senior':
-            suma_nivel_senior += int(elemento['level'])
+            empresa = oferta['company_name']
+            suma_nivel_senior += int(skill['level'])
             total_ofertas_senior+=1
-            habilidad = elemento['name']
-            if habilidad not in skills_senior.keys():
-                skills_senior[habilidad]= 1
+            habilidad = skill['name']
+            #habilidades senior
+            if mp.contains(skills_senior, habilidad)==False:
+                mp.put(skills_senior, habilidad, 1)
             else:
-                skills_senior[habilidad]+=1
-            
-            if empresa not in empresas_senior.keys():
-                empresas_senior[empresa] = 1
+                pareja_senior = mp.get(skills_senior, habilidad)
+                valor_senior = me.getValue(pareja_senior)
+                valor_senior+=1
+                me.setValue(pareja_senior, valor_senior)
+            #Empresas senior    
+            if mp.contains(empresas_senior, empresa) == False:
+                mp.put(empresas_senior, empresa, 1)
             else:
-                empresas_senior[empresa] +=1
+                pareja_empresa_senior = mp.get(empresas_senior, empresa)
+                valor_empresa_senior = me.getValue(pareja_empresa_senior)
+                valor_empresa_senior+=1
+                me.setValue(pareja_empresa_senior, valor_empresa_senior)
                   
-        elif experiencia == 'mid':
-            suma_nivel_mid += int(elemento['level'])
-            total_ofertas_mid +=1
-            habilidad = elemento['name']
-            if habilidad not in skills_mid.keys():
-                skills_mid[habilidad]= 1
+        #mid
+        if experiencia == 'mid':
+            empresa = oferta['company_name']
+            suma_nivel_mid += int(skill['level'])
+            total_ofertas_mid+=1
+            habilidad = skill['name']
+            #habilidades mid
+            if mp.contains(skills_mid, habilidad)==False:
+                mp.put(skills_mid, habilidad, 1)
             else:
-                skills_mid[habilidad]+=1 
-                
-            if empresa not in empresas_mid.keys():
-                empresas_mid[empresa] = 1
+                pareja_mid = mp.get(skills_mid, habilidad)
+                valor_mid = me.getValue(pareja_mid)+1
+                me.setValue(pareja_mid, valor_mid)
+            #Empresas mid   
+            if mp.contains(empresas_mid, empresa) == False:
+                mp.put(empresas_mid, empresa, 1)
             else:
-                empresas_mid[empresa] +=1
-                
-        elif experiencia == 'junior':
-            suma_nivel_junior += int(elemento['level'])
-            total_ofertas_junior += 1
-            habilidad = elemento['name']
-            if habilidad not in skills_junior.keys():
-                skills_junior[habilidad]= 1
+                pareja_empresa_mid = mp.get(empresas_mid, empresa)
+                valor_empresa_mid = me.getValue(pareja_empresa_mid)+1
+                me.setValue(pareja_empresa_mid, valor_empresa_mid)
+        
+        #junior
+        if experiencia == 'junior':
+            empresa = oferta['company_name']
+            suma_nivel_junior += int(skill['level'])
+            total_ofertas_junior+=1
+            habilidad = skill['name']
+            #habilidades junior
+            if mp.contains(skills_junior, habilidad)==False:
+                mp.put(skills_junior, habilidad, 1)
             else:
-                skills_junior[habilidad]+=1
-            
-            if empresa not in empresas_junior.keys():
-                empresas_junior[empresa] = 1
+                pareja_junior = mp.get(skills_junior, habilidad)
+                valor_junior = me.getValue(pareja_junior)+1
+                me.setValue(pareja_junior, valor_junior)
+            #Empresas junior    
+            if mp.contains(empresas_junior, empresa) == False:
+                mp.put(empresas_junior, empresa, 1)
             else:
-                empresas_junior[empresa] +=1
+                pareja_empresa_junior = mp.get(empresas_junior, empresa)
+                valor_empresa_junior = me.getValue(pareja_empresa_junior)+1
+                me.setValue(pareja_empresa_junior, valor_empresa_junior)
     
     promedio_junior = suma_nivel_junior//total_ofertas_junior
     promedio_mid = suma_nivel_mid//total_ofertas_mid
@@ -587,8 +747,12 @@ def req_7(catalog, n, f_inicial, f_final):
     
     #Requerimientos por experiencia
     skills_senior_ordenadas = lt.newList('ARRAY_LIST')
-    for habilidad in skills_senior.keys():
-        lt.addLast(skills_senior_ordenadas, {'skill': habilidad,'count': skills_senior[habilidad]})
+    skills_senior_keys = mp.keySet(skills_senior)
+    
+    for habilidad in lt.iterator(skills_senior_keys):
+        pareja_senior_skill = mp.get(skills_senior, habilidad)
+        valor_senior_skill = me.getValue(pareja_senior_skill)
+        lt.addLast(skills_senior_ordenadas, {'skill': habilidad,'count': valor_senior_skill})
     merg.sort(skills_senior_ordenadas, sort_criteria_req6y7)
     
     habilidades_diferentes_senior = lt.size(skills_senior_ordenadas)
@@ -596,8 +760,11 @@ def req_7(catalog, n, f_inicial, f_final):
     habilidad_menos_senior = lt.lastElement(skills_senior_ordenadas)
     
     skills_mid_ordenadas = lt.newList('ARRAY_LIST')
-    for habilidad in skills_mid.keys():
-        lt.addLast(skills_mid_ordenadas, {'skill': habilidad,'count': skills_mid[habilidad]})
+    skills_mid_keys = mp.keySet(skills_mid)
+    for habilidad in lt.iterator(skills_mid_keys):
+        pareja_mid_skill = mp.get(skills_mid, habilidad)
+        valor_mid_skill = me.getValue(pareja_mid_skill)
+        lt.addLast(skills_mid_ordenadas, {'skill': habilidad,'count': valor_mid_skill})
     merg.sort(skills_mid_ordenadas, sort_criteria_req6y7)
     
     habilidades_diferentes_mid = lt.size(skills_mid_ordenadas)
@@ -605,8 +772,11 @@ def req_7(catalog, n, f_inicial, f_final):
     habilidad_menos_mid = lt.lastElement(skills_mid_ordenadas)
     
     skills_junior_ordenadas = lt.newList('ARRAY_LIST')
-    for habilidad in skills_junior.keys():
-        lt.addLast(skills_junior_ordenadas, {'skill': habilidad,'count': skills_junior[habilidad]})
+    skills_junior_keys = mp.keySet(skills_junior)
+    for habilidad in lt.iterator(skills_junior_keys):
+        pareja_junior_skill = mp.get(skills_junior, habilidad)
+        valor_junior_skill = me.getValue(pareja_junior_skill)
+        lt.addLast(skills_junior_ordenadas, {'skill': habilidad,'count': valor_junior_skill})
     merg.sort(skills_junior_ordenadas, sort_criteria_req6y7)
     
     habilidades_diferentes_junior = lt.size(skills_mid_ordenadas)
@@ -615,8 +785,11 @@ def req_7(catalog, n, f_inicial, f_final):
     
     # empresas por experiencia
     empresas_senior_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_senior.keys():
-        lt.addLast(empresas_senior_ordenadas, {'empresa': empresa,'count': empresas_senior[empresa]})
+    empresas_senior_keys = mp.keySet(empresas_senior)
+    for empresa in lt.iterator(empresas_senior_keys):
+        pareja = mp.get(empresas_senior, empresa)
+        valor_senior_empresa = me.getValue(pareja)
+        lt.addLast(empresas_senior_ordenadas, {'empresa': empresa,'count': valor_senior_empresa})
     merg.sort(empresas_senior_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_senior = lt.size(empresas_senior_ordenadas)
@@ -624,8 +797,11 @@ def req_7(catalog, n, f_inicial, f_final):
     empresa_menos_senior = lt.lastElement(empresas_senior_ordenadas)
     
     empresas_mid_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_mid.keys():
-        lt.addLast(empresas_mid_ordenadas, {'empresa': empresa,'count': empresas_mid[empresa]})
+    empresas_mid_keys = mp.keySet(empresas_mid)
+    for empresa in lt.iterator(empresas_mid_keys):
+        pareja = mp.get(empresas_mid, empresa)
+        valor_mid_empresas = me.getValue(pareja)
+        lt.addLast(empresas_mid_ordenadas, {'empresa': empresa,'count': valor_mid_empresas})
     merg.sort(empresas_mid_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_mid = lt.size(empresas_mid_ordenadas)
@@ -633,8 +809,11 @@ def req_7(catalog, n, f_inicial, f_final):
     empresa_menos_mid = lt.lastElement(empresas_mid_ordenadas)
 
     empresas_junior_ordenadas = lt.newList('ARRAY_LIST')
-    for empresa in empresas_junior.keys():
-        lt.addLast(empresas_junior_ordenadas, {'empresa': empresa,'count': empresas_junior[empresa]})
+    empresas_junior_keys = mp.keySet(empresas_junior)
+    for empresa in lt.iterator(empresas_junior_keys):
+        pareja = mp.get(empresas_junior, empresa)
+        valor_junior_empresa = me.getValue(pareja)
+        lt.addLast(empresas_junior_ordenadas, {'empresa': empresa,'count': valor_junior_empresa})
     merg.sort(empresas_junior_ordenadas, sort_criteria_req6y7)
     
     empresas_diferentes_junior = lt.size(empresas_junior_ordenadas)
