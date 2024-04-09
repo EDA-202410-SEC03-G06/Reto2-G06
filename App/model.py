@@ -293,7 +293,7 @@ def req_4(catalog, pais, f_inicio, f_fin):
                     oferta['remote'] = False
                 datos = {'published_at': oferta['published_at'],'title':oferta['title'], 'experience_level': oferta['experience_level'],'company_name': oferta['company_name'],
                  'city': oferta['city'], 'workplace_type': oferta['workplace_type'],'remote': oferta['remote'],'open_to_hire_ukrainians': oferta['open_to_hire_ukrainians']}
-                lt.addLast(ofertas_rango, oferta)
+                lt.addLast(ofertas_rango, datos)
                 
                 if mp.contains(empresas, empresa) == False:
                     mp.put(empresas, empresa, True)
