@@ -173,9 +173,9 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     junior = model.mp.get(keys,'junior') 
     mid = model.mp.get(keys,'mid')
     senior= model.mp.get(keys,'senior')
-  
+    lista_1 =model.mp.valueSet(lista)
         
-    return size, junior, mid, senior, lista
+    return size, junior, mid, senior, lista_1
     
 
 

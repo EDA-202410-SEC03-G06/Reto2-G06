@@ -269,6 +269,7 @@ if __name__ == "__main__":
             print('La cantidad de ofertas "junior" es',tup[1]['value'])
             print('La cantidad de ofertas "mid" es',tup[2]['value'])
             print('La cantidad de ofertas "senior" es',tup[3]['value'])
+            print(tup[4])
             
             
         elif int(inputs) == 5:
