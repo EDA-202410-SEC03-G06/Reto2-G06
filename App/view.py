@@ -107,6 +107,11 @@ def print_req_2(control):
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
+    mem = int(input('Quiere observar el uso de memoria?\n 1: Si\n 2: No'))
+    if mem == 1:
+        memflag = True
+    else:
+        memflag = False
     city = input('Inserte el nombre de la ciudad: ')
     empresa = input('Ingrese el nombre de la empresa: ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))    

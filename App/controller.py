@@ -165,11 +165,25 @@ def req_2(control, n , empresa, city):
     """
     # TODO: Modificar el requerimiento 2
     start_time = get_time()
+    memflag= True
+    if memflag is True:
+        tracemalloc.start()
+        start_memory= get_memory()
+
     lista = model.req_2(control['model'],n , empresa, city)
-    llaves= model.mp.keySet(lista[1])
+    
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    
     end_time = get_time()
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    if memflag:
+        Delta_memory = delta_memory(stop_memory, start_memory)
+        print("Memoria [kB]:  ", Delta_memory)
+    
+    llaves= model.mp.keySet(lista[1])
     for oferta in model.lt.iterator(llaves):
         parejas= model.mp.get(lista[1], oferta)
         valor= model.me.getValue(parejas)
