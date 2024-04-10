@@ -159,13 +159,13 @@ def req_1(control,n,pais,exp):
     
 
 
-def req_2(control, n , empresa, city):
+def req_2(control, n , empresa, city, memflag):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
     start_time = get_time()
-    memflag= True
+    
     if memflag is True:
         tracemalloc.start()
         start_memory= get_memory()
