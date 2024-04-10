@@ -177,7 +177,7 @@ def print_req_6(control):
     print('La ciudad con mayor cantidad de ofertas es:',mayor['city'],'con el total de ofertas:',mayor['count'])    
     print('La ciudad con menor cantidad de ofertas es:',menor['city'],'con el total de ofertas:',menor['count'])    
    
-    return 
+    
 
 
 def print_req_7(control):
