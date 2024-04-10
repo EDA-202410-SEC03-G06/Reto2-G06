@@ -180,11 +180,7 @@ def req_1(catalog, n, pais, expert):
         datos = {'published_at': o['published_at'],'title':o['title'],'company_name':o['company_name'],'experience_level':o['experience_level'],
                  'country_code':o['country_code'],'city':o['city'],'company_size':o['company_size'],
                  'workplace_type':o['workplace_type'], 'open_to_hire_ukrainians':o['open_to_hire_ukrainians']}
-        if lt.size(filtro_2) > 10:
-            final= (datos[0:5], datos[-5:-1])
-        else:
-            final= datos
-        mp.put(filtro_2,o["id"],final)
+        mp.put(filtro_2,o["id"],datos)
     
     return (total_ofertas_pais, total_ofertas_condicion, filtro_2 )
 
