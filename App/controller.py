@@ -176,14 +176,14 @@ def req_3(control,empresa,fecha_in,fecha_fin):
     # TODO: Modificar el requerimiento 3
     memflag=True
     start_time = get_time()
-   # lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+  
     if memflag is True:
         tracemalloc.start()
         start_memory = get_memory()
 
-
-    lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
-    # calculando la diferencia en tiempo 
+    lista, keys = model.req_3(control['model'],empresa,fecha_in,fecha_fin)
+    #lista, keys = model.req_3(control['model'],'Bitfinex','2005-10-10','2023-10-10')
+    
     # finaliza el proceso para medir memoria
     if memflag is True:
         stop_memory = get_memory()
@@ -234,18 +234,34 @@ def req_6(control,n,exp,fecha):
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
+    memflag=False
     start_time = get_time()
-    #ofertas = model.req_6(control['model'],n,exp,fecha)
-    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],40,'mid','2022')
-    end_time = get_time()
+    if memflag is True:
+        tracemalloc.start()
+        start_memory = get_memory()
+
+    total_ofertas, cant_ciudades, cant_empresas, mayor, menor, lista_c = model.req_6(control['model'],n,exp,fecha)
+    # calculando la diferencia en tiempo 
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    
+    end_time = get_time()   
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
+    if memflag:
+        Delta_memory = delta_memory(stop_memory, start_memory)
+        print("Memoria [kB]: ",Delta_memory)
+    
     llaves = model.mp.valueSet(lista_c)
     for ciudad in model.lt.iterator(llaves):
-        llave = model.mp.valueSet(ciudad)
+        llave = model.mp.keySet(ciudad)
+
         for element in model.lt.iterator(llave):
-            print(element)
-            
+            parvalor = model.mp.get(ciudad,element)
+            valor = model.me.getValue(parvalor)
+            print(element,':',valor)
+            pass
 
     return total_ofertas, cant_ciudades, cant_empresas, mayor, menor
 
