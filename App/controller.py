@@ -230,6 +230,7 @@ def req_5(catalog, city, fecha_inicial, fecha_final):
     end_time= get_time()
     deltaTime= delta_time(start_time, end_time)
     print (deltaTime, "[ms]")
+    
     return respuesta
 
 def req_6(control,n,exp,fecha):

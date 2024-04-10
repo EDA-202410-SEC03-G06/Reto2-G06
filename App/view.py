@@ -153,7 +153,14 @@ def print_req_5(control):
     ciudad= input("Escriba la ciudad que desea:  ")
     fecha_inicial= input("Escriba la fecha inicial (más antigua):  ")
     fecha_final= input("Escriba la fecha final (más reciente):  ")
-    return controller.req_5(control, ciudad, fecha_inicial, fecha_final)
+    total_ofertas, total_empresas, mayor, menor, ultima_respuesta= controller.req_5(control, ciudad, fecha_inicial, fecha_final)
+    print(f"El total de ofertas es: {total_ofertas}")
+    print(f"El total de empresas son: {total_empresas}")
+    print(f"La ciudad con mayor numero de ofertas es {mayor[0]} con un total de {mayor[1]}")
+    print(f"La ciudad con menor numero de ofertas es {menor[0]} con un total de {menor[1]}")
+    print(ultima_respuesta)
+    
+    
 
 
 def print_req_6(control):

@@ -331,7 +331,7 @@ def req_5(catalog, city, fecha_inicial, fecha_final):
     ofertas_filtradas  = lt.newList('ARRAY_LIST')
     fecha_inicial= datetime.strptime(fecha_inicial, '%Y-%m-%d')
     fecha_final= datetime.strptime(fecha_final, '%Y-%m-%d')
-    empresas= lt.newList('ARRAY_LIST')
+    empresas= mp.newMap()
  
  #total de ofertas
     for oferta in lt.iterator(ofertas):
@@ -343,19 +343,33 @@ def req_5(catalog, city, fecha_inicial, fecha_final):
                 lt.addLast(ofertas_filtradas,oferta)   
     cantidad_ofertas= lt.size(ofertas_filtradas)       
 #total de empresas
-    for oferta in lt.iterator(ofertas):
-        if oferta['company_name'] not in empresas:
-            empresas[oferta['company_name']] = 1
+    for oferta in lt.iterator(ofertas_filtradas):
+        empresa= oferta['company_name']
+        if mp.contains(empresas, empresa) == False:
+            mp.put(empresas, empresa, 1)
         else:
-            empresas[oferta['company_name']] +=1 
-            
-            total_empresas= mp.size(empresas)
+            empresa_valor= mp.get(empresas, empresa)
+            valor = me.getValue(empresa_valor)
+            me.setValue(empresa_valor, valor+1)
+
+    empresas_llaves= mp.keySet(empresas)
+    empresas_lista= lt.newList('ARRAY_LIST')
+    
+    for empresa in lt.iterator(empresas_llaves):
+        empresa_val= mp.get(empresas, empresa)
+        valor= me.getValue(empresa_val)
+        nombre_empresa= me.getKey(empresa_val)
+        lt.addLast(empresas_lista, {'empresa': nombre_empresa, 'count': valor})
+        total_empresas= lt.size(empresas_lista)
             
 #empresas con mayor numero de ofertas y conteo
-    merg.sort(total_empresas, sort_criteria_req6y7)
-    mayor= lt.firstElement(total_empresas)
-    menor= lt.lastElement(total_empresas)
-      
+    merg.sort(empresas_lista, sort_criteria_req6y7)
+    mayor= lt.firstElement(empresas_lista)
+    mayor_empresa= mayor['empresa']
+    count_mayor= mayor['count']
+    menor= lt.lastElement(empresas_lista)
+    menor_empresa= menor['empresa']
+    count_menor= menor['count']  
 #ultima respuesta
     mapa= mp.newMap()
     for llave in lt.iterator(ofertas_filtradas):
@@ -364,7 +378,7 @@ def req_5(catalog, city, fecha_inicial, fecha_final):
         mp.put(mapa, llave['id'], datos)           
         
                     
-    return (cantidad_ofertas, total_empresas, mayor, menor, mapa)
+    return (cantidad_ofertas, total_empresas, (mayor_empresa, count_mayor), (menor_empresa, count_menor), mapa)
 
 
 def req_6(data_structs, n, experience, fecha):
