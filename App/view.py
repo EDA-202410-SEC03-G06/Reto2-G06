@@ -89,6 +89,11 @@ def print_req_1(control):
         Función que imprime la solución del Requerimiento 1 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 1
+    mem = int(input('Quiere observar el uso de memoria?\n 1: Si\n 2: No'))
+    if mem == 1:
+        memflag = True
+    else:
+        memflag = False
     pais = input('Inserte el codigo del pais: ')
     exp = input('Que nivel de experiencia busca?(junior,mid,senior): ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))
@@ -158,7 +163,9 @@ def print_req_5(control):
     print(f"El total de empresas son: {total_empresas}")
     print(f"La ciudad con mayor numero de ofertas es {mayor[0]} con un total de {mayor[1]}")
     print(f"La ciudad con menor numero de ofertas es {menor[0]} con un total de {menor[1]}")
-    print(ultima_respuesta)
+    #print(ultima_respuesta)
+    
+    
     
     
 
