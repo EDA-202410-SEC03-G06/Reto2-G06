@@ -60,8 +60,7 @@ def print_menu():
     print("7- Ejecutar Requerimiento 6")
     print("8- Ejecutar Requerimiento 7")
     print("9- Ejecutar Requerimiento 8")
-    print("10- Escoger entre Array-List y Single-Linked")
-    print("11- Escoger Tamaño")
+    print("10- Escoger Tamaño")
     print("0- Salir")
 
 
@@ -115,7 +114,7 @@ def print_req_2(control):
     city = input('Inserte el nombre de la ciudad: ')
     empresa = input('Ingrese el nombre de la empresa: ')
     n = int(input('Ingrese la cantidad de ofertas que desea ver: '))    
-    tup = controller.req_2(control, n , empresa, city)
+    tup = controller.req_2(control, n , empresa, city, memflag)
     
     return tup
 
@@ -318,13 +317,6 @@ if __name__ == "__main__":
             print_req_8(control)
         
         elif int(inputs) == 10:
-            lista = int(input('Ingrese el tipo de lista que desea (1 para Array y 2 para encadenada):'))
-            if lista == 1:
-                tipo = 'ARRAY_LIST'
-            elif lista == 2:
-                tipo = 'SINGLE_LINKED'
-            
-        elif int(inputs) == 11:
             size_archivo = int(input('Escoga el Tamaño:\n1.10%\n2.20%\n3.small%\n4.50%\n5.80%\n6.100%\nOpcion: '))
             
         elif int(inputs) == 0:
