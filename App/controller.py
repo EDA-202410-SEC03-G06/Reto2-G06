@@ -253,10 +253,23 @@ def req_5(catalog, city, fecha_inicial, fecha_final):
     """
     # TODO: Modificar el requerimiento 5
     start_time= get_time()
+    memflag= True
+    if memflag is True:
+        tracemalloc.start()
+        start_memory= get_memory()
+
     respuesta= model.req_5(catalog["model"], city, fecha_inicial, fecha_final)
+    if memflag is True:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+    
+    
     end_time= get_time()
     deltaTime= delta_time(start_time, end_time)
     print (deltaTime, "[ms]")
+    if memflag:
+        Delta_memory = delta_memory(stop_memory, start_memory)
+        print("Memoria [kB]:  ", Delta_memory)
     
     return respuesta
 

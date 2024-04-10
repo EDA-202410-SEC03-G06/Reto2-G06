@@ -160,6 +160,11 @@ def print_req_5(control):
         Función que imprime la solución del Requerimiento 5 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 5
+    mem = int(input('Quiere observar el uso de memoria?\n 1: Si\n 2: No'))
+    if mem == 1:
+        memflag = True
+    else:
+        memflag = False
     ciudad= input("Escriba la ciudad que desea:  ")
     fecha_inicial= input("Escriba la fecha inicial (más antigua):  ")
     fecha_final= input("Escriba la fecha final (más reciente):  ")
