@@ -151,9 +151,9 @@ def print_req_5(control):
     """
     # TODO: Imprimir el resultado del requerimiento 5
     ciudad= input("Escriba la ciudad que desea:  ")
-    fecha_in= input("Escriba la fecha inicial (más reciente):  ")
-    fecha_fin= input("Escriba la fecha final (más antigua):  ")
-    return controller.req_5(control, ciudad, fecha_in, fecha_fin)
+    fecha_inicial= input("Escriba la fecha inicial (más antigua):  ")
+    fecha_final= input("Escriba la fecha final (más reciente):  ")
+    return controller.req_5(control, ciudad, fecha_inicial, fecha_final)
 
 
 def print_req_6(control):

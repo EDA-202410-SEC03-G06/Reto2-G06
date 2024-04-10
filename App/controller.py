@@ -158,7 +158,7 @@ def req_2(control, n , empresa, city):
     deltaTime = delta_time(start_time, end_time)
     print(deltaTime,"[ms]")
     for oferta in model.lt.iterator(llaves):
-        parejas= model.mp.get(lista, oferta)
+        parejas= model.mp.get(lista[1], oferta)
         valor= model.me.getValue(parejas)
         print(llaves, valor)
     
@@ -220,14 +220,17 @@ def req_4(control, country, f_inicio, f_fin):
     return ofertas
    
 
-def req_5(catalog, city, fecha_in, fecha_fin):
+def req_5(catalog, city, fecha_inicial, fecha_final):
     """
     Retorna el resultado del requerimiento 5
     """
     # TODO: Modificar el requerimiento 5
-    prueba= model.req_5(catalog["model"], city, fecha_in, fecha_fin)
-    
-    return prueba
+    start_time= get_time()
+    respuesta= model.req_5(catalog["model"], city, fecha_inicial, fecha_final)
+    end_time= get_time()
+    deltaTime= delta_time(start_time, end_time)
+    print (deltaTime, "[ms]")
+    return respuesta
 
 def req_6(control,n,exp,fecha):
     """
